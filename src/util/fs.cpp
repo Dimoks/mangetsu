@@ -1,9 +1,9 @@
 #include <mg/util/fs.hpp>
 
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include <unistd.h>
 
 namespace mg {
@@ -12,8 +12,9 @@ namespace fs {
 MappedFile::~MappedFile() { munmap(const_cast<uint8_t *>(_data), _size); }
 
 std::unique_ptr<MappedFile> MappedFile::open(const char *filename) {
-  int file_fd = ::open(filename, O_RDONLY);
+  int file_fd = ::open(filename, O_RDONLY | O_BINARY);
   if (file_fd < 0) {
+    fprintf(stderr,"ERROR: fs.cpp: mg::fs::MappedFile::open failed!\n");
     return nullptr;
   }
 
@@ -22,9 +23,11 @@ std::unique_ptr<MappedFile> MappedFile::open(const char *filename) {
 
   const off_t file_size = ::lseek(file_fd, 0, SEEK_END);
   if (file_size < 0) {
+    fprintf(stderr,"ERROR: fs.cpp: \"::lseek\" failed: %s\n", strerror(errno));
     return nullptr;
   }
   if (lseek(file_fd, 0, SEEK_SET) < 0) {
+    fprintf(stderr,"ERROR: fs.cpp: lseek failed.\n");
     return nullptr;
   }
 
@@ -32,6 +35,7 @@ std::unique_ptr<MappedFile> MappedFile::open(const char *filename) {
       mmap(nullptr, file_size, PROT_READ, MAP_PRIVATE, file_fd, 0);
 
   if (mmapped_data == nullptr) {
+    fprintf(stderr,"ERROR: fs.cpp: mmap failed.\n");
     return nullptr;
   }
 
@@ -41,7 +45,7 @@ std::unique_ptr<MappedFile> MappedFile::open(const char *filename) {
 
 bool read_file(const char *path, std::string &out) {
   // Open file
-  const int fd = open(path, O_RDONLY);
+  const int fd = open(path, O_RDONLY | O_BINARY);
   if (fd == -1) {
     fprintf(stderr, "Failed to open '%s' - %s\n", path, strerror(errno));
     return false;
@@ -55,7 +59,7 @@ bool read_file(const char *path, std::string &out) {
   do {
     bytes_read = read(fd, buffer, read_blocksz);
     if (bytes_read == -1) {
-      fprintf(stderr, "Failed to read '%s' - %s\n", path, strerror(errno));
+      fprintf(stderr, "Failed to read '%s' - %s.\n", path, strerror(errno));
       return false;
     }
     out.append(buffer, bytes_read);
@@ -70,7 +74,7 @@ bool write_file(const char *path, const std::string &data) {
 
 bool write_file(const char *path, const std::string_view &data) {
   // Open file
-  const int fd = open(path, O_RDWR | O_CREAT | O_TRUNC, 0644);
+  const int fd = open(path, O_RDWR | O_CREAT | O_TRUNC | O_BINARY, 0644);
   if (fd == -1) {
     fprintf(stderr, "Failed to open '%s' - %s\n", path, strerror(errno));
     return false;
@@ -82,7 +86,7 @@ bool write_file(const char *path, const std::string_view &data) {
     int wrote_bytes = write(fd, &data[total_bytes_written],
                             data.size() - total_bytes_written);
     if (wrote_bytes == -1) {
-      fprintf(stderr, "Failed to write '%s' - %s\n", path, strerror(errno));
+      fprintf(stderr, "Failed to write '%s' - %s.\n", path, strerror(errno));
       return false;
     }
     total_bytes_written += wrote_bytes;

@@ -1,5 +1,9 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.7..3.23)
 project(mangetsu LANGUAGES C CXX)
+set(VERSION "1.0")
+
+cmake_policy(SET CMP0054 NEW)
+cmake_policy(SET CMP0083 NEW)
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -9,24 +13,73 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/;/usr/loca
 if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
   message(SEND_ERROR "In-source builds are not allowed.")
 endif ()
-
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_COLOR_MAKEFILE ON)
-
 set(CMAKE_CXX_STANDARD 17)
-
-if (CMAKE_BUILD_TYPE MATCHES Debug)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -gdwarf-4 -g3 -g -rdynamic")
-  set(GCC_OPTIMIZATION "-O0")
-endif ()
-
-set(GCC_COVERAGE_COMPILE_FLAGS "-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Werror -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=pragmas -Wno-error=unused-local-typedefs")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS} ${GCC_OPTIMIZATION}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
-
+set(CMAKE_CXX_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_EXTENSIONS OFF)
+option(BUILD_GUI "Build GUI programs [default: OFF]" OFF)
+#
+# Windows builds are statically linked to external libraries by default. 
+#
+if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    option(LINK_STATIC_EXES "Link executables statically [default: ON]" ON)
+else()
+    option(LINK_STATIC_EXES "Link executables statically [default: OFF]" OFF)
+endif()
+#
+# Internal libraries are built statically by default, and those
+# used specifically by GUI programs are *always* built statically.
+#
+if(NOT BUILD_SHARED_LIBS)
+    set(BUILD_SHARED_LIBS OFF)
+endif()
+#
+set(default_build_type "Release")
+#
+# Set debug compile options and set default target to "Release". 
+#
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+  add_compile_options(-gdwarf-4 -g3 -g -rdynamic -O0 -fno-omit-frame-pointer)
+elseif(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS 
+    "Setting build type to '${default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+      STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+#
+# GCC compiler options for all build targets
+#
+add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Werror -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=pragmas -Wno-error=unused-local-typedefs -fPIE)
+#
+# GCC compiler options/defs specific to mingw64 x86_64
+#
+if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
+  add_compile_definitions(_FILE_OFFSET_BITS=64)
+endif()
+#
+# Linker options for static and shared builds.
+#
+if(LINK_STATIC_EXES)
+  if(MINGW)
+    add_link_options(-static-libgcc -static-libstdc++ -lwinpthread -static)
+  else()
+    add_link_options(-static-pie)
+  endif()
+else()
+    if(MINGW)
+      add_link_options(-lwinpthread)
+    endif()
+  add_link_options(-pie)
+endif()
+#
 # Put UI stuff behind a build flag so that people don't have to mess around
 # with deps as much by default
-if (${BUILD_GUI})
+#
+if(BUILD_GUI)
   # OpenGL
   include(FindOpenGL)
   include_directories(${OPENGL_INCLUDE_DIRS})
@@ -36,14 +89,16 @@ if (${BUILD_GUI})
   pkg_check_modules(PC_LIBGLFW REQUIRED glfw3)
   include_directories(${PC_LIBGLFW_INCLUDE_DIRS})
 endif()
-
+#
+# Actually add our target libraries and executables. 
+#
 include_directories(include)
 
-# Json library
+# JSON library
 include_directories(vendor/json)
 
 # Only build imgui lib if UI is enabled
-if (${BUILD_GUI})
+if(BUILD_GUI)
   include_directories(vendor/imgui/)
   add_library(imgui
       STATIC
@@ -66,7 +121,24 @@ endif()
 add_library(mg_util
   src/util/fs.cpp
 )
+#
+# MSYS2 does not currently have its own libmman wrapper, so 
+# one must be downloaded and compiled manually, and set as a 
+# target link library for mg_util (fs.cpp). This will be changed
+# such that this step is performed by cmake in a future commit.
+#
+if(MINGW)
+    find_package(PkgConfig)
+    pkg_check_modules(MMAN REQUIRED mman)
+     include_directories(${MMAN_INCLUDE_DIRS})
+        target_link_libraries(mg_util PRIVATE
+            mman
+    )
+endif()
 
+set_target_properties(mg_util
+    PROPERTIES POSITION_INDEPENDENT_CODE ON
+)
 add_library(mg_data
   src/data/mzp.cpp
   src/data/mzx.cpp
@@ -77,6 +149,9 @@ add_library(mg_data
 target_link_libraries(mg_data
     z
     mg_util
+)
+set_target_properties(mg_data    
+    PROPERTIES POSITION_INDEPENDENT_CODE ON
 )
 
 add_executable(nxx_decompress
@@ -136,7 +211,7 @@ target_link_libraries(nam_read
     mg_data
 )
 
-if (${BUILD_GUI})
+if (BUILD_GUI)
   add_executable(data_explorer
       src/tools/data_explorer.cpp
   )
@@ -195,3 +270,59 @@ target_link_libraries(mrg_replace
     mg_data
     stdc++fs
 )
+#
+# Installation configuration
+#
+if (NOT SKIP_INSTALL_ALL)
+    #
+    # Configure install destinations
+    #
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+        set(CMAKE_INSTALL_PREFIX $ENV{LOCALAPPDATA} CACHE PATH "Installation prefix on Windows." FORCE)
+        set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/mangetsu" CACHE PATH "Installation directory for executables")
+    else()
+        set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
+    endif()
+    #
+    # Actually add install destination for each binary
+    #
+    get_property(_TARGETS_LIST
+        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
+        PROPERTY BUILDSYSTEM_TARGETS
+    )
+    foreach (_target ${_TARGETS_LIST})
+        get_target_property(_target_type ${_target} TYPE)
+        #
+        # Only install shared libraries and executables, not static libraries.
+        #
+         if (NOT ${_target_type} STREQUAL "STATIC_LIBRARY")
+            install( TARGETS ${_target}
+                CONFIGURATIONS Release 
+                RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
+            )
+         endif()
+        #
+        # Strip built files of everything except relocation information
+        # when building for Release. 
+        # ref1: https://www.technovelty.org/linux/stripping-shared-libraries.html
+        # ref2: https://stackoverflow.com/a/14176386/
+        # src:  https://stackoverflow.com/a/53692364/
+        #
+        add_custom_command(
+           TARGET ${_target} DEPENDS ${_target}
+           POST_BUILD
+           COMMAND $<$<CONFIG:release>:${CMAKE_STRIP}>
+           ARGS --strip-unneeded $<TARGET_FILE:${_target}>
+         )
+     endforeach()
+     #
+     # Post-Install Tasks (only Windows for now)
+     # src:      https://stackoverflow.com/a/29979349/
+     #
+	 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+        # Make local vars available to subdirectory's CMakeLists.txt
+        install(CODE "set(WORKINGDIR \"${CMAKE_SOURCE_DIR}\")")
+        install(CODE "set(INSTALL_BIN_DIR \"${INSTALL_BIN_DIR}\")")
+        add_subdirectory(${CMAKE_SOURCE_DIR}/cmake/postinstall)
+     endif()
+endif(NOT SKIP_INSTALL_ALL)

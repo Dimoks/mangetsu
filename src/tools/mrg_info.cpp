@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
   // count
   if (has_nam && mrg->entries().size() != nam.names.size()) {
     fprintf(stderr,
-            "MRG entry count (%lu) does not match NAM entry count (%lu)\n",
+            "MRG entry count (%zu) does not match NAM entry count (%zu)\n",
             mrg->entries().size(), nam.names.size());
     return -1;
   }

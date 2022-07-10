@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  fprintf(stderr, "MZP archive of %lu elements:\n", mzp.entry_headers.size());
+  fprintf(stderr, "MZP archive of %zu elements:\n", mzp.entry_headers.size());
   for (auto &header : mzp.entry_headers) {
     header.print();
   }

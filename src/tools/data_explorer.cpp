@@ -15,6 +15,12 @@
 #include <mg/util/fs.hpp>
 #include <mg/util/string.hpp>
 
+#ifdef _WIN32
+#define GUI_FONT_PATH "C:\\Windows\\Fonts\\unifont.ttf"
+#else
+#define GUI_FONT_PATH "/usr/share/fonts/truetype/unifont/unifont.ttf"
+#endif
+
 enum DataType {
   UNDEFINED,
   DATA_NAM,
@@ -166,7 +172,7 @@ struct DataFile {
 
   bool render_mzp() {
     mg::data::Mzp *mzp = reinterpret_cast<mg::data::Mzp *>(parsed_data);
-    ImGui::Text("MZP with %lu entries", mzp->entry_headers.size());
+    ImGui::Text("MZP with %zu entries", mzp->entry_headers.size());
 
     bool did_add_ctx = false;
     for (unsigned i = 0; i < mzp->entry_headers.size(); i++) {
@@ -215,7 +221,7 @@ int main(int argc, char **argv) {
     return -1;
   }
   GLFWwindow *window =
-      glfwCreateWindow(1920, 1080, "Data Explorrer", nullptr, nullptr);
+      glfwCreateWindow(1024, 768, "Data Explorer", nullptr, nullptr);
   if (!window) {
     return -1;
   }
@@ -230,7 +236,7 @@ int main(int argc, char **argv) {
   // Render bindings
   ImGuiIO &io = ImGui::GetIO();
   io.FontGlobalScale = 1.0;
-  io.Fonts->AddFontFromFileTTF("/usr/share/fonts/truetype/unifont/unifont.ttf",
+  io.Fonts->AddFontFromFileTTF(GUI_FONT_PATH,
                                16, nullptr, io.Fonts->GetGlyphRangesJapanese());
 
   ImGui_ImplGlfw_InitForOpenGL(window, true);

@@ -85,7 +85,7 @@ mg::data::Mzp patch_string_table(const nlohmann::json &translation_db,
         parse_offset_table(mzp_archive.entry_data[offset_table_idx]);
     const std::vector<std::string> original_strings =
         extract_string_table(mzp_archive.entry_data[string_table_idx], offsets);
-    fprintf(stderr, "Loaded %lu strings from tables %u+%u\n",
+    fprintf(stderr, "Loaded %zu strings from tables %u+%u\n",
             original_strings.size(), offset_table_idx, string_table_idx);
 
     // Iterate the strings, and replace any translated ones with the appropriate

@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
   if (!mg::fs::write_file(argv[1], mzp_out)) {
     return -1;
   }
-  fprintf(stderr, "Wrote %ld bytes to %s\n", mzp_out.size(), argv[1]);
+  fprintf(stderr, "Wrote %zu bytes to %s\n", mzp_out.size(), argv[1]);
 
   return 0;
 }

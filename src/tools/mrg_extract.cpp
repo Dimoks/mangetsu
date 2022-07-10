@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
   // count
   if (has_nam && mrg->entries().size() != nam.names.size()) {
     fprintf(stderr,
-            "MRG entry count (%lu) does not match NAM entry count (%lu)\n",
+            "MRG entry count (%zu) does not match NAM entry count (%zu)\n",
             mrg->entries().size(), nam.names.size());
     return -1;
   }
@@ -109,13 +109,13 @@ int main(int argc, char **argv) {
   std::filesystem::path output_dir = output_path ? output_path : ".";
   if (!std::filesystem::exists(output_dir) &&
       !std::filesystem::create_directories(output_dir)) {
-    fprintf(stderr, "Failed to create output path '%s'\n", output_dir.c_str());
+    fprintf(stderr, "Failed to create output path '%s'\n", output_dir.string().c_str());
     return -1;
   }
 
   // Utility method to write an index to an output file
   const std::string output_basename =
-      std::filesystem::path(input_basename).stem();
+      (std::filesystem::path(input_basename)).stem().string();
   auto write_entry = [&](unsigned index) -> int {
     std::string output_filename =
         mg::string::format("%s.%08lu.dat", output_basename.c_str(), index);
@@ -130,11 +130,11 @@ int main(int argc, char **argv) {
     auto entry_data = mrg->entry_data(index);
     std::filesystem::path output_path = output_dir;
     output_path.append(output_filename);
-    if (!mg::fs::write_file(output_path.c_str(), entry_data)) {
+    if (!mg::fs::write_file(output_path.string().c_str(), entry_data)) {
       return -1;
     }
-    fprintf(stderr, "Wrote %lu bytes to %s\n", entry_data.size(),
-            output_path.c_str());
+    fprintf(stderr, "Wrote %zu bytes to %s\n", entry_data.size(),
+            output_path.string().c_str());
 
     return 0;
   };

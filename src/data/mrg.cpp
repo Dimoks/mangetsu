@@ -19,7 +19,7 @@ void Mrg::PackedEntryHeader::to_file_order() {
 
 bool mrg_read(const std::string &hed, const std::string &mrg, Mrg &out) {
   if (hed.size() % sizeof(Mrg::PackedEntryHeader) != 0) {
-    fprintf(stderr, "Wrong size for HED, must be multiple of %lu\n",
+    fprintf(stderr, "Wrong size for HED, must be multiple of %zu\n",
             sizeof(Mrg::PackedEntryHeader));
     return false;
   }
@@ -102,7 +102,7 @@ MappedMrg::parse(const std::string &hed,
                  std::shared_ptr<mg::fs::MappedFile> backing_data) {
   // Check header size valid
   if (hed.size() % sizeof(Mrg::PackedEntryHeader) != 0) {
-    fprintf(stderr, "Wrong size for HED, must be multiple of %lu\n",
+    fprintf(stderr, "Wrong size for HED, must be multiple of %zu\n",
             sizeof(Mrg::PackedEntryHeader));
     return nullptr;
   }
