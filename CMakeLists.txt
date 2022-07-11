@@ -8,16 +8,17 @@ cmake_policy(SET CMP0083 NEW)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/;/usr/local/")
-
-if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
-  message(SEND_ERROR "In-source builds are not allowed.")
-endif ()
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON) 
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/;/usr/local/")
+
+if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+  message(SEND_ERROR "In-source builds are not allowed.")
+endif ()
+
 option(BUILD_GUI "Build GUI programs [default: OFF]" OFF)
 #
 # Windows builds are statically linked to external libraries by default. 
@@ -35,10 +36,9 @@ if(NOT BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS OFF)
 endif()
 #
-set(default_build_type "Release")
-#
 # Set debug compile options and set default target to "Release". 
 #
+set(default_build_type "Release")
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   add_compile_options(-gdwarf-4 -g3 -g -rdynamic -O0 -fno-omit-frame-pointer)
 elseif(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -117,7 +117,9 @@ if(BUILD_GUI)
      ${PC_LIBGLFW_LIBRARIES}
   )
 endif()
-
+#
+# Beginning of general lib/exec add_() section
+#
 add_library(mg_util
   src/util/fs.cpp
 )
@@ -130,9 +132,9 @@ add_library(mg_util
 if(MINGW)
     find_package(PkgConfig)
     pkg_check_modules(MMAN REQUIRED mman)
-     include_directories(${MMAN_INCLUDE_DIRS})
-        target_link_libraries(mg_util PRIVATE
-            mman
+    include_directories(${MMAN_INCLUDE_DIRS})
+    target_link_libraries(mg_util PRIVATE
+       mman
     )
 endif()
 
@@ -270,59 +272,4 @@ target_link_libraries(mrg_replace
     mg_data
     stdc++fs
 )
-#
-# Installation configuration
-#
-if (NOT SKIP_INSTALL_ALL)
-    #
-    # Configure install destinations
-    #
-    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-        set(CMAKE_INSTALL_PREFIX $ENV{LOCALAPPDATA} CACHE PATH "Installation prefix on Windows." FORCE)
-        set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/mangetsu" CACHE PATH "Installation directory for executables")
-    else()
-        set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
-    endif()
-    #
-    # Actually add install destination for each binary
-    #
-    get_property(_TARGETS_LIST
-        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
-        PROPERTY BUILDSYSTEM_TARGETS
-    )
-    foreach (_target ${_TARGETS_LIST})
-        get_target_property(_target_type ${_target} TYPE)
-        #
-        # Only install shared libraries and executables, not static libraries.
-        #
-         if (NOT ${_target_type} STREQUAL "STATIC_LIBRARY")
-            install( TARGETS ${_target}
-                CONFIGURATIONS Release 
-                RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
-            )
-         endif()
-        #
-        # Strip built files of everything except relocation information
-        # when building for Release. 
-        # ref1: https://www.technovelty.org/linux/stripping-shared-libraries.html
-        # ref2: https://stackoverflow.com/a/14176386/
-        # src:  https://stackoverflow.com/a/53692364/
-        #
-        add_custom_command(
-           TARGET ${_target} DEPENDS ${_target}
-           POST_BUILD
-           COMMAND $<$<CONFIG:release>:${CMAKE_STRIP}>
-           ARGS --strip-unneeded $<TARGET_FILE:${_target}>
-         )
-     endforeach()
-     #
-     # Post-Install Tasks (only Windows for now)
-     # src:      https://stackoverflow.com/a/29979349/
-     #
-	 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-        # Make local vars available to subdirectory's CMakeLists.txt
-        install(CODE "set(WORKINGDIR \"${CMAKE_SOURCE_DIR}\")")
-        install(CODE "set(INSTALL_BIN_DIR \"${INSTALL_BIN_DIR}\")")
-        add_subdirectory(${CMAKE_SOURCE_DIR}/cmake/postinstall)
-     endif()
-endif(NOT SKIP_INSTALL_ALL)
+include(cmake/install_cfg.cmake)
