@@ -16,6 +16,7 @@ If you also wish to build the graphical tools, you will need some additional dep
 ```bash
 sudo apt install -y libopengl-dev libglfw3-dev
 ```
+Note: GCC8 or higher is required. 
 
 ### Build commands
 
