@@ -15,11 +15,8 @@
 #include <mg/util/fs.hpp>
 #include <mg/util/string.hpp>
 
-#ifdef _WIN32
-#define GUI_FONT_PATH "C:\\Windows\\Fonts\\unifont.ttf"
-#else
-#define GUI_FONT_PATH "/usr/share/fonts/truetype/unifont/unifont.ttf"
-#endif
+#include <unifont.cpp>
+
 
 enum DataType {
   UNDEFINED,
@@ -236,9 +233,9 @@ int main(int argc, char **argv) {
   // Render bindings
   ImGuiIO &io = ImGui::GetIO();
   io.FontGlobalScale = 1.0;
-  io.Fonts->AddFontFromFileTTF(GUI_FONT_PATH,
-                               16, nullptr, io.Fonts->GetGlyphRangesJapanese());
-
+  //io.Fonts->AddFontFromFileTTF(GUI_FONT_PATH,
+  //                             16, nullptr, io.Fonts->GetGlyphRangesJapanese());
+  io.Fonts->AddFontFromMemoryCompressedTTF(Unifont_compressed_data, Unifont_compressed_size, 16, nullptr, io.Fonts->GetGlyphRangesJapanese());
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL2_Init();
 
