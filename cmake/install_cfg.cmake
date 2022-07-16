@@ -23,7 +23,8 @@ if (NOT SKIP_INSTALL_ALL)
         #
         # Only install shared libraries and executables, not static libraries.
         #
-         if (NOT ${_target_type} STREQUAL "STATIC_LIBRARY")
+         if (${_target_type} STREQUAL "EXECUTABLE" OR 
+             ${_target_type} STREQUAL "SHARED_LIBRARY")
             install( TARGETS ${_target}
                 CONFIGURATIONS Release 
                 RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
@@ -36,12 +37,18 @@ if (NOT SKIP_INSTALL_ALL)
         # ref2: https://stackoverflow.com/a/14176386/
         # src:  https://stackoverflow.com/a/53692364/
         #
-        add_custom_command(
-           TARGET ${_target} DEPENDS ${_target}
-           POST_BUILD
-           COMMAND $<$<CONFIG:release>:${CMAKE_STRIP}>
-           ARGS --strip-unneeded $<TARGET_FILE:${_target}>
-         )
+        # if statement added to filter out the mman-win32 ExternalProject.
+        #
+        if (${_target_type} STREQUAL "EXECUTABLE" OR 
+            ${_target_type} STREQUAL "SHARED_LIBRARY" OR
+            ${_target_type} STREQUAL "STATIC_LIBRARY")
+            add_custom_command(
+               TARGET ${_target} DEPENDS ${_target}
+               POST_BUILD
+               COMMAND $<$<CONFIG:release>:${CMAKE_STRIP}>
+               ARGS --strip-unneeded $<TARGET_FILE:${_target}>
+             )
+        endif ()
      endforeach()
      #
      # Post-Install Tasks (only Windows for now)
