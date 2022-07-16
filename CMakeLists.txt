@@ -3,6 +3,7 @@ project(mangetsu LANGUAGES C CXX)
 set(VERSION "1.0")
 
 cmake_policy(SET CMP0054 NEW)
+cmake_policy(SET CMP0072 NEW)
 cmake_policy(SET CMP0083 NEW)
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -57,8 +58,10 @@ add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -We
 #
 # GCC compiler options/defs specific to mingw64 x86_64
 #
-if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
-  add_compile_definitions(_FILE_OFFSET_BITS=64)
+if(DEFINED ENV{MSYSTEM})
+    if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
+      add_compile_definitions(_FILE_OFFSET_BITS=64)
+    endif()
 endif()
 #
 # Linker options for static and shared builds.
@@ -121,9 +124,11 @@ if(BUILD_GUI)
 # which don't work with the UCRT64 implementation of printf(),
 # substitute the MINGW implementation of stdio.
 #
-  if($ENV{MSYSTEM} STREQUAL "UCRT64")
-    target_compile_definitions(imgui INTERFACE 
-        __USE_MINGW_ANSI_STDIO)
+  if(DEFINED ENV{MSYSTEM})
+      if($ENV{MSYSTEM} STREQUAL "UCRT64")
+        target_compile_definitions(imgui INTERFACE 
+            __USE_MINGW_ANSI_STDIO)
+      endif()
   endif()
 endif(BUILD_GUI)
 #
@@ -137,18 +142,20 @@ add_library(mg_util
 # one is downloaded, compiled, and installed here, and set as a 
 # dependency and target link library for mg_util (fs.cpp). 
 #
-if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
-    include(ExternalProject)
-    ExternalProject_Add(mman-win32
-      GIT_REPOSITORY https://github.com/bilditup1/mman-win32.git
-      GIT_TAG 4f4e24d36564ff90c16187476cb053ef5fa6ccb6
-      UPDATE_DISCONNECTED 1
-    )
-    add_dependencies(mg_util mman-win32)
-    target_link_libraries(mg_util PRIVATE
-        mman
-    )
- endif()
+if(DEFINED ENV{MSYSTEM})
+    if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
+        include(ExternalProject)
+        ExternalProject_Add(mman-win32
+          GIT_REPOSITORY https://github.com/bilditup1/mman-win32.git
+          GIT_TAG 4f4e24d36564ff90c16187476cb053ef5fa6ccb6
+          UPDATE_DISCONNECTED 1
+        )
+        add_dependencies(mg_util mman-win32)
+        target_link_libraries(mg_util PRIVATE
+            mman
+        )
+    endif()
+endif()
 
 set_target_properties(mg_util
     PROPERTIES POSITION_INDEPENDENT_CODE ON
