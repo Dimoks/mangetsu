@@ -83,7 +83,6 @@ if(BUILD_GUI)
   # OpenGL
   include(FindOpenGL)
   include_directories(${OPENGL_INCLUDE_DIRS})
-
   # Glfw for windowing
   find_package(PkgConfig)
   pkg_check_modules(PC_LIBGLFW REQUIRED glfw3)
@@ -99,6 +98,7 @@ include_directories(vendor/json)
 
 # Only build imgui lib if UI is enabled
 if(BUILD_GUI)
+  include_directories(vendor/gnu/)
   include_directories(vendor/imgui/)
   add_library(imgui
       STATIC
@@ -116,6 +116,13 @@ if(BUILD_GUI)
      ${OPENGL_LIBRARIES}
      ${PC_LIBGLFW_LIBRARIES}
   )
+# To accomodate format specifiers used by the imgui library, 
+# which don't work with the UCRT64 implementation of printf(),
+# substitute the MINGW implementation of stdio.
+  if($ENV{MSYSTEM} STREQUAL "UCRT64")
+    target_compile_definitions(imgui INTERFACE 
+        __USE_MINGW_ANSI_STDIO)
+  endif()
 endif()
 #
 # Beginning of general lib/exec add_() section

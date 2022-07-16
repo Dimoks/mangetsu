@@ -17,7 +17,6 @@
 
 #include <unifont.cpp>
 
-
 enum DataType {
   UNDEFINED,
   DATA_NAM,
@@ -233,9 +232,8 @@ int main(int argc, char **argv) {
   // Render bindings
   ImGuiIO &io = ImGui::GetIO();
   io.FontGlobalScale = 1.0;
-  //io.Fonts->AddFontFromFileTTF(GUI_FONT_PATH,
-  //                             16, nullptr, io.Fonts->GetGlyphRangesJapanese());
-  io.Fonts->AddFontFromMemoryCompressedTTF(Unifont_compressed_data, Unifont_compressed_size, 16, nullptr, io.Fonts->GetGlyphRangesJapanese());
+  io.Fonts->AddFontFromMemoryCompressedTTF(Unifont_compressed_data, 
+    Unifont_compressed_size, 16, nullptr, io.Fonts->GetGlyphRangesJapanese());
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL2_Init();
 
