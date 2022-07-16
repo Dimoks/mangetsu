@@ -98,7 +98,7 @@ include_directories(vendor/json)
 
 # Only build imgui lib if UI is enabled
 if(BUILD_GUI)
-  include_directories(vendor/gnu/)
+  include_directories(vendor/gnu/) # this includes GNU Unifont
   include_directories(vendor/imgui/)
   add_library(imgui
       STATIC
@@ -116,14 +116,16 @@ if(BUILD_GUI)
      ${OPENGL_LIBRARIES}
      ${PC_LIBGLFW_LIBRARIES}
   )
+#
 # To accomodate format specifiers used by the imgui library, 
 # which don't work with the UCRT64 implementation of printf(),
 # substitute the MINGW implementation of stdio.
+#
   if($ENV{MSYSTEM} STREQUAL "UCRT64")
     target_compile_definitions(imgui INTERFACE 
         __USE_MINGW_ANSI_STDIO)
   endif()
-endif()
+endif(BUILD_GUI)
 #
 # Beginning of general lib/exec add_() section
 #
@@ -131,19 +133,22 @@ add_library(mg_util
   src/util/fs.cpp
 )
 #
-# MSYS2 does not currently have its own libmman wrapper, so 
-# one must be downloaded and compiled manually, and set as a 
-# target link library for mg_util (fs.cpp). This will be changed
-# such that this step is performed by cmake in a future commit.
+# Neither Windows nor MSYS2 have a libmman wrapper, so 
+# one is downloaded, compiled, and installed here, and set as a 
+# dependency and target link library for mg_util (fs.cpp). 
 #
-if(MINGW)
-    find_package(PkgConfig)
-    pkg_check_modules(MMAN REQUIRED mman)
-    include_directories(${MMAN_INCLUDE_DIRS})
-    target_link_libraries(mg_util PRIVATE
-       mman
+if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
+    include(ExternalProject)
+    ExternalProject_Add(mman-win32
+      GIT_REPOSITORY https://github.com/bilditup1/mman-win32.git
+      GIT_TAG 4f4e24d36564ff90c16187476cb053ef5fa6ccb6
+      UPDATE_DISCONNECTED 1
     )
-endif()
+    add_dependencies(mg_util mman-win32)
+    target_link_libraries(mg_util PRIVATE
+        mman
+    )
+ endif()
 
 set_target_properties(mg_util
     PROPERTIES POSITION_INDEPENDENT_CODE ON
