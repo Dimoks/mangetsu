@@ -1,4 +1,7 @@
-cmake_minimum_required(VERSION 3.11..3.24)
+if(${CMAKE_VERSION} VERSION_LESS "3.13.0") 
+    message("Project requires at CMake 3.13.0 to build properly")
+endif()
+cmake_minimum_required(VERSION 3.13..3.24)
 project(mangetsu LANGUAGES C CXX)
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -288,4 +291,11 @@ target_link_libraries(mrg_replace
     mg_data
     stdc++fs
 )
-include(cmake/install_cfg.cmake)
+#
+# install_cfg.cmake uses features introduced in cmake 3.21.0
+#
+if(NOT ${CMAKE_VERSION} VERSION_LESS "3.21.0") 
+    include(cmake/install_cfg.cmake)
+else() 
+    message("Installation configuration requires cmake 3.21 or higher")
+endif()
