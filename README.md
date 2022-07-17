@@ -16,7 +16,8 @@ If you also wish to build the graphical tools, you will need some additional dep
 ```bash
 sudo apt install -y libopengl-dev libglfw3-dev
 ```
-Note: GCC8 or higher is required. 
+Note: [At least GCC 8](https://stackoverflow.com/questions/39231363/fatal-error-filesystem-no-such-file-or-directory) and [cmake 3.13](https://cmake.org/cmake/help/latest/command/add_link_options.html) are required. If you're on an older system,
+newer GCCs are available [in this PPA](https://launchpad.net/~ubuntu-toolchain-r/+archive/ubuntu/test), and newer cmakes are available [via this PPA](https://apt.kitware.com/).
 
 ### Build commands
 
