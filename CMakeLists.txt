@@ -1,10 +1,5 @@
-cmake_minimum_required(VERSION 3.7..3.23)
+cmake_minimum_required(VERSION 3.11..3.24)
 project(mangetsu LANGUAGES C CXX)
-set(VERSION "1.0")
-
-cmake_policy(SET CMP0054 NEW)
-cmake_policy(SET CMP0072 NEW)
-cmake_policy(SET CMP0083 NEW)
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -30,8 +25,8 @@ else()
     option(LINK_STATIC_EXES "Link executables statically [default: OFF]" OFF)
 endif()
 #
-# Internal libraries are built statically by default, and those
-# used specifically by GUI programs are *always* built statically.
+# Internal libraries for CLI programs are built statically by default;
+# but, those used by GUI programs are *always* built statically.
 #
 if(NOT BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS OFF)
@@ -54,9 +49,12 @@ endif()
 #
 # GCC compiler options for all build targets
 #
-add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Werror -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=pragmas -Wno-error=unused-local-typedefs -fPIE)
+add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Werror
+    -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=pragmas
+    -Wno-error=unused-local-typedefs -fPIE)
 #
 # GCC compiler options/defs specific to mingw64 x86_64
+# Guarded by initial if to prevent evaluation on Linux or Windows 
 #
 if(DEFINED ENV{MSYSTEM})
     if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
@@ -101,7 +99,7 @@ include_directories(vendor/json)
 
 # Only build imgui lib if UI is enabled
 if(BUILD_GUI)
-  include_directories(vendor/gnu/) # this includes GNU Unifont
+  include_directories(vendor/gnu/)
   include_directories(vendor/imgui/)
   add_library(imgui
       STATIC
@@ -119,11 +117,11 @@ if(BUILD_GUI)
      ${OPENGL_LIBRARIES}
      ${PC_LIBGLFW_LIBRARIES}
   )
-#
-# To accomodate format specifiers used by the imgui library, 
-# which don't work with the UCRT64 implementation of printf(),
-# substitute the MINGW implementation of stdio.
-#
+  #
+  # To accomodate format specifiers used by the imgui library, 
+  # which don't work with the UCRT64 implementation of printf(),
+  # substitute the MINGW implementation of stdio.
+  #
   if(DEFINED ENV{MSYSTEM})
       if($ENV{MSYSTEM} STREQUAL "UCRT64")
         target_compile_definitions(imgui INTERFACE 
@@ -140,21 +138,20 @@ add_library(mg_util
 #
 # Neither Windows nor MSYS2 have a libmman wrapper, so 
 # one is downloaded, compiled, and installed here, and set as a 
-# dependency and target link library for mg_util (fs.cpp). 
+# dependency and target link library for mg_util (fs.cpp). Should
+# work with MSVC but needs testing (along w/everything else).  
 #
 if(DEFINED ENV{MSYSTEM})
-    if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
-        include(ExternalProject)
-        ExternalProject_Add(mman-win32
-          GIT_REPOSITORY https://github.com/bilditup1/mman-win32.git
-          GIT_TAG 4f4e24d36564ff90c16187476cb053ef5fa6ccb6
-          UPDATE_DISCONNECTED 1
-        )
-        add_dependencies(mg_util mman-win32)
-        target_link_libraries(mg_util PRIVATE
-            mman
-        )
-    endif()
+  include(ExternalProject)
+  ExternalProject_Add(mman-win32
+    GIT_REPOSITORY https://github.com/bilditup1/mman-win32.git
+    GIT_TAG 4f4e24d
+    UPDATE_DISCONNECTED 1 # prevents rebuilds on every make/ninja run
+  )
+  add_dependencies(mg_util mman-win32)
+  target_link_libraries(mg_util PRIVATE
+       mman
+  )
 endif()
 
 set_target_properties(mg_util
