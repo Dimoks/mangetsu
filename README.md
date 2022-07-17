@@ -17,7 +17,7 @@ If you also wish to build the graphical tools, you will need some additional dep
 sudo apt install -y libopengl-dev libglfw3-dev
 ```
 Note: [At least GCC 8](https://stackoverflow.com/questions/39231363/fatal-error-filesystem-no-such-file-or-directory) and [cmake 3.13](https://cmake.org/cmake/help/latest/command/add_link_options.html) are required. If you're on an older system,
-newer GCCs are available [in this PPA](https://launchpad.net/~ubuntu-toolchain-r/+archive/ubuntu/test), and newer cmakes are available [via this PPA](https://apt.kitware.com/).
+newer GCCs are available [via the Ubuntu test toolchain PPA](https://launchpad.net/~ubuntu-toolchain-r/+archive/ubuntu/test), and newer cmakes are available [via the official kitware PPA](https://apt.kitware.com/).
 
 ### Build commands
 
@@ -63,6 +63,9 @@ cmake ..                # No UI programs
 cmake -DBUILD_GUI=On .. # With UI programs
 ninja
 ```
+
+### Installation
+
 For convenience, the CMake file also generated installation logic which can install Mangetsu to `%LOCALAPPDATA%/mangetsu` and then adds that folder to your path. Just run:
 ```bash
 ninja install
