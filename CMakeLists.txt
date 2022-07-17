@@ -17,7 +17,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/;/usr/loca
 if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
   message(SEND_ERROR "In-source builds are not allowed.")
 endif ()
-
+#
+# Specify whether to build the GUI or not 
+#
 option(BUILD_GUI "Build GUI programs [default: OFF]" OFF)
 #
 # Windows builds are statically linked to external libraries by default. 
@@ -29,11 +31,10 @@ else()
 endif()
 #
 # Internal libraries for CLI programs are built statically by default;
-# but, those used by GUI programs are *always* built statically.
+# this is overridable by supplying this option, but needs further testing.
+# Note, libraries used by GUI programs are *always* built statically.
 #
-if(NOT BUILD_SHARED_LIBS)
-    set(BUILD_SHARED_LIBS OFF)
-endif()
+option(BUILD_SHARED_LIBS "Build shared libraries [default: OFF]" OFF)
 #
 # Set debug compile options and set default target to "Release". 
 #
