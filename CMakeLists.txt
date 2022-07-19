@@ -50,9 +50,8 @@ endif()
 #
 # GCC compiler options for all build targets
 #
-add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Werror
-    -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=pragmas
-    -Wno-error=unused-local-typedefs -fPIE)
+add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas
+    -Werror -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=pragmas -Wno-error=unused-local-typedefs -fPIE)
 #
 # GCC compiler options/defs specific to mingw64 x86_64
 # Guarded by initial if to prevent evaluation on Linux or Windows 
@@ -78,16 +77,56 @@ else()
   add_link_options(-pie)
 endif()
 #
-# Actually add our target libraries and executables. 
+# Add header dirs to include variable
 #
-include_directories(include)
-
-# JSON library
-include_directories(vendor/json)
+include_directories(include)     # default include dirs
+include_directories(vendor/json) # JSON library
 
 #
-# Put UI stuff behind a build flag so that people don't have to mess around
-# with deps as much by default
+# Add libraries that are part of mangetsu itself to project 
+#
+add_library(mg_util
+  src/util/fs.cpp
+)
+set_target_properties(mg_util
+    PROPERTIES POSITION_INDEPENDENT_CODE ON
+)
+#
+# Neither Windows nor MSYS2 have a libmman wrapper, so 
+# one is downloaded, compiled, and installed here, and set as a 
+# dependency and target link library for mg_util (fs.cpp). Should
+# work with MSVC but needs testing (along w/everything else).  
+#
+if(MINGW)
+  include(ExternalProject)
+  ExternalProject_Add(mman-win32
+    GIT_REPOSITORY https://github.com/bilditup1/mman-win32.git
+    GIT_TAG 4f4e24d
+    UPDATE_DISCONNECTED 1 # prevents rebuilds on every make/ninja run
+  )
+  add_dependencies(mg_util mman-win32)
+  target_link_libraries(mg_util PRIVATE
+       mman
+  )
+endif()
+
+add_library(mg_data
+  src/data/mzp.cpp
+  src/data/mzx.cpp
+  src/data/mrg.cpp
+  src/data/nam.cpp
+  src/data/nxx.cpp
+)
+target_link_libraries(mg_data
+    z
+    mg_util
+)
+set_target_properties(mg_data    
+    PROPERTIES POSITION_INDEPENDENT_CODE ON
+)
+#
+# Add GUI libs and exe(s); put behind a build flag so that people 
+# don't need to mess with dependencies as much by default
 #
 if(BUILD_GUI)
   # OpenGL
@@ -97,8 +136,8 @@ if(BUILD_GUI)
   find_package(PkgConfig)
   pkg_check_modules(PC_LIBGLFW REQUIRED glfw3)
   include_directories(${PC_LIBGLFW_INCLUDE_DIRS})
-  include_directories(vendor/gnu/)
-  include_directories(vendor/imgui/)
+  include_directories(vendor/gnu/)   # GNU Unifont (as cpp source file)
+  include_directories(vendor/imgui/) # Dear ImGUI library
   add_library(imgui
       STATIC
       vendor/imgui/imgui.cpp
@@ -126,50 +165,20 @@ if(BUILD_GUI)
             __USE_MINGW_ANSI_STDIO)
       endif()
   endif()
+  #
+  # Add data_explorer executable to project
+  #
+  add_executable(data_explorer
+      src/tools/data_explorer.cpp
+  )
+  target_link_libraries(data_explorer
+      mg_data
+      imgui
+  )
 endif(BUILD_GUI)
 #
-# **** Beginning of general lib/exec add_() section ****
+# Add CLI programs to project
 #
-add_library(mg_util
-  src/util/fs.cpp
-)
-#
-# Neither Windows nor MSYS2 have a libmman wrapper, so 
-# one is downloaded, compiled, and installed here, and set as a 
-# dependency and target link library for mg_util (fs.cpp). Should
-# work with MSVC but needs testing (along w/everything else).  
-#
-if(MINGW)
-  include(ExternalProject)
-  ExternalProject_Add(mman-win32
-    GIT_REPOSITORY https://github.com/bilditup1/mman-win32.git
-    GIT_TAG 4f4e24d
-    UPDATE_DISCONNECTED 1 # prevents rebuilds on every make/ninja run
-  )
-  add_dependencies(mg_util mman-win32)
-  target_link_libraries(mg_util PRIVATE
-       mman
-  )
-endif()
-
-set_target_properties(mg_util
-    PROPERTIES POSITION_INDEPENDENT_CODE ON
-)
-add_library(mg_data
-  src/data/mzp.cpp
-  src/data/mzx.cpp
-  src/data/mrg.cpp
-  src/data/nam.cpp
-  src/data/nxx.cpp
-)
-target_link_libraries(mg_data
-    z
-    mg_util
-)
-set_target_properties(mg_data    
-    PROPERTIES POSITION_INDEPENDENT_CODE ON
-)
-
 add_executable(nxx_decompress
     src/tools/nxx_decompress.cpp
 )
@@ -227,16 +236,6 @@ target_link_libraries(nam_read
     mg_data
 )
 
-if (BUILD_GUI)
-  add_executable(data_explorer
-      src/tools/data_explorer.cpp
-  )
-  target_link_libraries(data_explorer
-      mg_data
-      imgui
-  )
-endif()
-
 add_executable(script_text_to_content_json
     src/tools/script_text_to_content_json.cpp
 )
@@ -286,4 +285,4 @@ target_link_libraries(mrg_replace
     mg_data
     stdc++fs
 )
-include(cmake/install_cfg.cmake)
+include(cmake/install_cfg.cmake) # installation configuration
