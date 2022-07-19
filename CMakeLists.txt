@@ -1,6 +1,3 @@
-if(${CMAKE_VERSION} VERSION_LESS "3.13.0") 
-    message("Project requires at CMake 3.13.0 to build properly")
-endif()
 cmake_minimum_required(VERSION 3.13..3.24)
 project(mangetsu LANGUAGES C CXX)
 
@@ -60,7 +57,7 @@ add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -We
 # GCC compiler options/defs specific to mingw64 x86_64
 # Guarded by initial if to prevent evaluation on Linux or Windows 
 #
-if(DEFINED ENV{MSYSTEM})
+if(MINGW)
     if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
       add_compile_definitions(_FILE_OFFSET_BITS=64)
     endif()
@@ -81,6 +78,14 @@ else()
   add_link_options(-pie)
 endif()
 #
+# Actually add our target libraries and executables. 
+#
+include_directories(include)
+
+# JSON library
+include_directories(vendor/json)
+
+#
 # Put UI stuff behind a build flag so that people don't have to mess around
 # with deps as much by default
 #
@@ -92,17 +97,6 @@ if(BUILD_GUI)
   find_package(PkgConfig)
   pkg_check_modules(PC_LIBGLFW REQUIRED glfw3)
   include_directories(${PC_LIBGLFW_INCLUDE_DIRS})
-endif()
-#
-# Actually add our target libraries and executables. 
-#
-include_directories(include)
-
-# JSON library
-include_directories(vendor/json)
-
-# Only build imgui lib if UI is enabled
-if(BUILD_GUI)
   include_directories(vendor/gnu/)
   include_directories(vendor/imgui/)
   add_library(imgui
@@ -126,7 +120,7 @@ if(BUILD_GUI)
   # which don't work with the UCRT64 implementation of printf(),
   # substitute the MINGW implementation of stdio.
   #
-  if(DEFINED ENV{MSYSTEM})
+  if(MINGW)
       if($ENV{MSYSTEM} STREQUAL "UCRT64")
         target_compile_definitions(imgui INTERFACE 
             __USE_MINGW_ANSI_STDIO)
@@ -134,7 +128,7 @@ if(BUILD_GUI)
   endif()
 endif(BUILD_GUI)
 #
-# Beginning of general lib/exec add_() section
+# **** Beginning of general lib/exec add_() section ****
 #
 add_library(mg_util
   src/util/fs.cpp
@@ -145,7 +139,7 @@ add_library(mg_util
 # dependency and target link library for mg_util (fs.cpp). Should
 # work with MSVC but needs testing (along w/everything else).  
 #
-if(DEFINED ENV{MSYSTEM})
+if(MINGW)
   include(ExternalProject)
   ExternalProject_Add(mman-win32
     GIT_REPOSITORY https://github.com/bilditup1/mman-win32.git
@@ -292,11 +286,4 @@ target_link_libraries(mrg_replace
     mg_data
     stdc++fs
 )
-#
-# install_cfg.cmake uses features introduced in cmake 3.21.0
-#
-if(NOT ${CMAKE_VERSION} VERSION_LESS "3.21.0") 
-    include(cmake/install_cfg.cmake)
-else() 
-    message("Installation configuration requires cmake 3.21 or higher")
-endif()
+include(cmake/install_cfg.cmake)
