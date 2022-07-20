@@ -16,8 +16,13 @@ If you also wish to build the graphical tools, you will need some additional dep
 ```bash
 sudo apt install -y libopengl-dev libglfw3-dev
 ```
-Note: [At least GCC 8](https://stackoverflow.com/questions/39231363/fatal-error-filesystem-no-such-file-or-directory) and [cmake 3.13](https://cmake.org/cmake/help/latest/command/add_link_options.html) are required. If you're on an older system,
-newer GCCs are available [via the Ubuntu test toolchain PPA](https://launchpad.net/~ubuntu-toolchain-r/+archive/ubuntu/test), and newer cmakes are available [via the official kitware PPA](https://apt.kitware.com/).
+**Note:** At least GCC 8<sup>[1]</sup> and cmake 3.13<sup>[2]</sup> are required. If you're on an older system,
+newer GCCs are available [via the Ubuntu test toolchain PPA][3], and newer cmakes are available [via the official kitware PPA][4], though neither of these have been tested. Ubuntu 20.04 LTS and Debian 11 Buster both come with compatible build tools out of the box, as do newer releases. 
+
+[1]: https://stackoverflow.com/a/39231488/299981 "Stack Overflow note on changes in libstdc namespace"
+[2]: https://cmake.org/cmake/help/latest/command/add_link_options.html "CMake Reference for add_link_options() noting when it was introduced"
+[3]: https://launchpad.net/~ubuntu-toolchain-r/+archive/ubuntu/test
+[4]: https://apt.kitware.com/
 
 ### Build commands
 
@@ -29,6 +34,14 @@ cmake ..                # No UI programs
 cmake -DBUILD_GUI=On .. # With UI programs
 make
 ```
+
+### Installation (root)
+
+For convenience, the CMake file also generated installation logic which can install the Mangetsu apps to `/usr/local/bin`. Just run:
+```bash
+sudo make install
+```
+As implied by the use of sudo, the destination folder requires administrator permissions in order to be written to.
 
 ## Building on Windows
 
@@ -54,7 +67,7 @@ All told these packages and their dependencies will take up a bit over 1GiB of s
 
 ### Build commands
 
-CMake on the MSYS platform requires the Ninja build system to be installed. You can manually install GNU make and use that instead, but it's much slower. The build commands are more or less the same as on \*nix, with only the final line differing:
+CMake on the MSYS platform specifies the Ninja build system be installed and adds it during the installation process above. You can manually install GNU make later and use that instead, but it's much slower, especially when rebuilding. The build commands are more or less the same as on \*nix, with only the final line differing to account for the use of ninja:
 ```bash
 git clone https://github.com/bilditup1/mangetsu
 cd mangetsu
@@ -64,13 +77,13 @@ cmake -DBUILD_GUI=On .. # With UI programs
 ninja
 ```
 
-### Installation
+### Installation (all users)
 
-For convenience, the CMake file also generated installation logic which can install Mangetsu to `%LOCALAPPDATA%/mangetsu` and then adds that folder to your path. Just run:
+For convenience, the CMake file also generated installation logic which can install Mangetsu to `%LOCALAPPDATA%/mangetsu` and then adds that folder to your path. Administrator permissions are not required! Just run:
 ```bash
 ninja install
 ```
-If you get a warning about the Powershell script that adds your install directory to your path being unsigned when you try this, you'll have to open a Powershell window and allow for unsigned scripts:
+If you get a warning about the Powershell script that adds your install directory to your path being unsigned when you try this, you'll have to open a Powershell window (again, as a regular user, not as an administrator) and allow for unsigned local scripts:
 ```powershell
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
@@ -79,7 +92,7 @@ Once you're done, you can make the script execution policy more restrictive if y
 ```powershell
 Set-ExecutionPolicy AllSigned -Scope CurrentUser
 ``` 
-That's it! You're done! The mangetsu apps should now be accessible from any directory on your PC using the command line. 
+That's it! You're done! The Mangetsu apps should now be accessible from any directory on your PC using the command line. 
 
 ## Tool Overview
 
