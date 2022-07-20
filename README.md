@@ -49,7 +49,7 @@ As implied by the use of sudo, the destination folder requires administrator per
 
 Mangetsu can be can also be built natively for Windows using the MINGW64 or UCRT64 environments of [the MSYS2 build platform](https://www.msys2.org/). If you aren't already set up, consider using UCRT64, which links against Microsoft's new, more consistent, and more standards conformant [Universal C Runtime](https://www.microsoft.com/en-us/download/details.aspx?id=48234), part of Windows 10 and above. 
 
-After your initial setup, you will also need to install the following dependencies to build mangetsu:
+First, download and run the MSYS2 installer from [their site](https://www.msys2.org/). After your initial setup, you will also need to install the following dependencies to build mangetsu:
 ```bash
 # ucrt64
 pacman -S git mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gcc-libs mingw-w64-ucrt-x86_64-headers-git mingw-w64-ucrt-x86_64-winpthreads-git mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-pkgconf mingw-w64-ucrt-x86_64-openssl mingw-w64-ucrt-x86_64-zlib
@@ -63,7 +63,7 @@ pacman -S mingw-w64-ucrt-x86_64-glfw
 # mingw64
 pacman -S mingw-w64-x86_64-glfw
 ```
-All told these packages and their dependencies will take up a bit over 1GiB of space on a clean install. NB: One additional dependency is downloaded, built, and installed within the confines of your MSYS2 environment during the build process; you are encouraged to investigate CMakeLists.txt for more information. 
+All told these packages and their dependencies will take up a bit over 1GiB of space on a clean install. Please note that during the build process, one additional dependency, [a small support library](https://github.com/bilditup1/mman-win32) that translates memory mapping API syntax, is downloaded, built, and installed within the confines of your MSYS2 environment; you are encouraged to investigate CMakeLists.txt as well as the library itself for more details. 
 
 ### Build commands
 
@@ -87,8 +87,8 @@ If you get a warning about the Powershell script that adds your install director
 ```powershell
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
-and then run `ninja install` again.
-Once you're done, you can make the script execution policy more restrictive if you like:
+and then run `ninja install` once more.
+Afterwards, you can make the script execution policy more restrictive again if you like:
 ```powershell
 Set-ExecutionPolicy AllSigned -Scope CurrentUser
 ``` 
