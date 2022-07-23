@@ -285,4 +285,4 @@ target_link_libraries(mrg_replace
     mg_data
     stdc++fs
 )
-include(cmake/install_cfg.cmake) # installation configuration
+include(cmake/Install.cmake) # installation configuration

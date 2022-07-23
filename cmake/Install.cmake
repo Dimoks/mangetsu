@@ -1,5 +1,5 @@
 #
-# install_cfg.cmake: Installation configuration
+# Install.cmake: Installation configuration
 #
 
 # Override default installation folder on Windows
