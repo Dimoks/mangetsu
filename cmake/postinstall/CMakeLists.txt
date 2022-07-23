@@ -1,1 +1,1 @@
-install(SCRIPT "${CMAKE_SOURCE_DIR}/cmake/postinstall/AddToPathWin32.cmake")  
+install(SCRIPT "${CMAKE_SOURCE_DIR}/cmake/postinstall/AddToPathWin.cmake")  
