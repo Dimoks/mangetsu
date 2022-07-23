@@ -14,7 +14,7 @@
 #include <mg/util/endian.hpp>
 #include <mg/util/fs.hpp>
 #include <mg/util/string.hpp>
-
+// per imgui docs, unifont converted to cpp + included here for embedding
 #include <unifont.cpp>
 
 enum DataType {

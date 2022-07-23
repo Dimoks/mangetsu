@@ -6,7 +6,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#ifndef O_BINARY
+// O_BINARY defined here for cross-compatibility (mode doesn't exist on *nix)
+#ifndef O_BINARY 
 #define O_BINARY 0
 #endif
 
