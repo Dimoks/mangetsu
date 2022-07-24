@@ -9,7 +9,6 @@ set(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON) 
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/;/usr/local/")
 
 if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
   message(SEND_ERROR "In-source builds are not allowed.")
@@ -95,20 +94,27 @@ set_target_properties(mg_util
 # Neither Windows nor MSYS2 have a libmman wrapper, so 
 # one is downloaded, compiled, and installed here, and set as a 
 # dependency and target link library for mg_util (fs.cpp). Should
-# work with MSVC but needs testing (along w/everything else).  
+# work with MSVC but needs testing (along w/everything else). 
 #
 if(MINGW)
-  include(ExternalProject)
-  ExternalProject_Add(mman-win32
-    GIT_REPOSITORY https://github.com/bilditup1/mman-win32.git
-    GIT_TAG 4f4e24d
-    UPDATE_DISCONNECTED 1 # prevents rebuilds on every make/ninja run
-  )
-  add_dependencies(mg_util mman-win32)
-  target_link_libraries(mg_util PRIVATE
-       mman
-  )
-endif()
+  find_package(PkgConfig)
+  pkg_check_modules(MMAN mman) # prevents rebuild if already installed
+  if(NOT MMAN_FOUND)
+      include(ExternalProject)
+      ExternalProject_Add(mman-win32
+        GIT_REPOSITORY https://github.com/bilditup1/mman-win32.git
+        GIT_TAG 4f4e24d
+        UPDATE_DISCONNECTED 1 # prevents rebuilds on every make/ninja run
+      )
+      add_dependencies(mg_util mman-win32)
+   else()
+     include_directories(${MMAN_INCLUDE_DIRS})
+   endif(NOT MMAN_FOUND)
+   target_link_libraries(mg_util PRIVATE
+         mman
+   )
+endif(MINGW)
+
 
 add_library(mg_data
   src/data/mzp.cpp
@@ -155,13 +161,13 @@ if(BUILD_GUI)
      ${PC_LIBGLFW_LIBRARIES}
   )
   #
-  # To accomodate format specifiers used by the imgui library, 
+  # To accomodate format specifiers used by the imgui library,
   # which don't work with the UCRT64 implementation of printf(),
   # substitute the MINGW implementation of stdio.
   #
   if(MINGW)
       if($ENV{MSYSTEM} STREQUAL "UCRT64")
-        target_compile_definitions(imgui INTERFACE 
+        target_compile_definitions(imgui INTERFACE
             __USE_MINGW_ANSI_STDIO)
       endif()
   endif()
