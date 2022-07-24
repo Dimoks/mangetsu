@@ -51,7 +51,8 @@ endif()
 # GCC compiler options for all build targets
 #
 add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas
-    -Werror -Wno-error=unused-variable -Wno-error=unused-but-set-variable -Wno-error=pragmas -Wno-error=unused-local-typedefs -fPIE)
+    -Werror -Wno-error=unused-variable -Wno-error=unused-but-set-variable 
+    -Wno-error=pragmas -Wno-error=unused-local-typedefs -fPIE)
 #
 # GCC compiler options/defs specific to mingw64 x86_64
 # Guarded by initial if to prevent evaluation on Linux or Windows 
