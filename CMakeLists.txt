@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13..3.24)
-project(mangetsu LANGUAGES C CXX)
+project(mangetsu LANGUAGES C CXX VERSION 1.0.0)
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -9,6 +9,7 @@ set(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON) 
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "Core")
 
 if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
   message(SEND_ERROR "In-source builds are not allowed.")
@@ -82,12 +83,27 @@ include_directories(include)     # default include dirs
 include_directories(vendor/json) # JSON library
 
 #
-# Add libraries that are part of mangetsu itself to project 
+# Add libraries 
 #
 add_library(mg_util
   src/util/fs.cpp
 )
 set_target_properties(mg_util
+    PROPERTIES POSITION_INDEPENDENT_CODE ON
+)
+
+add_library(mg_data
+  src/data/mzp.cpp
+  src/data/mzx.cpp
+  src/data/mrg.cpp
+  src/data/nam.cpp
+  src/data/nxx.cpp
+)
+target_link_libraries(mg_data
+    z
+    mg_util
+)
+set_target_properties(mg_data    
     PROPERTIES POSITION_INDEPENDENT_CODE ON
 )
 #
@@ -114,22 +130,6 @@ if(MINGW)
          mman
    )
 endif(MINGW)
-
-
-add_library(mg_data
-  src/data/mzp.cpp
-  src/data/mzx.cpp
-  src/data/mrg.cpp
-  src/data/nam.cpp
-  src/data/nxx.cpp
-)
-target_link_libraries(mg_data
-    z
-    mg_util
-)
-set_target_properties(mg_data    
-    PROPERTIES POSITION_INDEPENDENT_CODE ON
-)
 #
 # Add GUI libs and exe(s); put behind a build flag so that people 
 # don't need to mess with dependencies as much by default
@@ -291,4 +291,8 @@ target_link_libraries(mrg_replace
     mg_data
     stdc++fs
 )
+
 include(cmake/Install.cmake) # installation configuration
+if(WIN32)
+  include(cmake/Package.cmake) # packaging configuration
+endif()

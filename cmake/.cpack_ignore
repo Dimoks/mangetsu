@@ -1,0 +1,13 @@
+\\.git/
+\\.git*
+\\.vscode/
+\\.mypy_cache/
+\\.archive/
+
+test/*
+build*/
+doc/
+
+.editorconfig
+.gdbinit
+.un~
