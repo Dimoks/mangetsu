@@ -161,17 +161,6 @@ if(BUILD_GUI)
      ${PC_LIBGLFW_LIBRARIES}
   )
   #
-  # To accomodate format specifiers used by the imgui library,
-  # which don't work with the UCRT64 implementation of printf(),
-  # substitute the MINGW implementation of stdio.
-  #
-  if(MINGW)
-      if($ENV{MSYSTEM} STREQUAL "UCRT64")
-        target_compile_definitions(imgui INTERFACE
-            __USE_MINGW_ANSI_STDIO)
-      endif()
-  endif()
-  #
   # Add data_explorer executable to project
   #
   add_executable(data_explorer
