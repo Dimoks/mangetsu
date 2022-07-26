@@ -9,7 +9,7 @@ set(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON) 
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "Core")
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "core")
 
 if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
   message(SEND_ERROR "In-source builds are not allowed.")
@@ -36,8 +36,13 @@ option(BUILD_SHARED_LIBS "Build shared libraries [default: OFF]" OFF)
 # Set debug compile options and set default target to "Release". 
 #
 set(default_build_type "Release")
-if(CMAKE_BUILD_TYPE MATCHES Debug)
-  add_compile_options(-gdwarf-4 -g3 -g -rdynamic -O0 -fno-omit-frame-pointer)
+if(CMAKE_BUILD_TYPE MATCHES "^([D|d][E|e][B|b][U|u][G|g])$")
+  add_compile_options(-gdwarf-4 -g3 -g -O0 -no-pie -fno-omit-frame-pointer)
+  if(NOT WIN32) # possibly too coarse a guard
+     add_compile_options("-Wl,--export-dynamic")     # ELF executables
+  else()
+     add_compile_options("-Wl,--export-all-symbols") # PE executables 
+  endif()
 elseif(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS 
     "Setting build type to '${default_build_type}' as none was specified.")
@@ -52,7 +57,10 @@ endif()
 #
 add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas
     -Werror -Wno-error=unused-variable -Wno-error=unused-but-set-variable 
-    -Wno-error=pragmas -Wno-error=unused-local-typedefs -fPIE)
+    -Wno-error=pragmas -Wno-error=unused-local-typedefs)
+if(CMAKE_BUILD_TYPE MATCHES Release)
+  add_compile_options(-fpie)
+endif()
 #
 # GCC compiler options/defs specific to mingw64 x86_64
 # Guarded by initial if to prevent evaluation on Linux or Windows 
@@ -67,14 +75,11 @@ endif()
 #
 if(LINK_STATIC_EXES)
   if(MINGW)
-    add_link_options(-static-libgcc -static-libstdc++ -lwinpthread -static)
+    add_link_options(-static)
   else()
     add_link_options(-static-pie)
   endif()
 else()
-    if(MINGW)
-      add_link_options(-lwinpthread)
-    endif()
   add_link_options(-pie)
 endif()
 #
@@ -82,7 +87,6 @@ endif()
 #
 include_directories(include)     # default include dirs
 include_directories(vendor/json) # JSON library
-
 #
 # Add libraries 
 #
