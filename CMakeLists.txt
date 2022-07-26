@@ -58,7 +58,7 @@ endif()
 add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas
     -Werror -Wno-error=unused-variable -Wno-error=unused-but-set-variable 
     -Wno-error=pragmas -Wno-error=unused-local-typedefs)
-if(CMAKE_BUILD_TYPE MATCHES Release)
+if(CMAKE_BUILD_TYPE MATCHES "^([R|r][E|e][L|l]|[E|e][A|a][S|s][E|e])$")
   add_compile_options(-fpie)
 endif()
 #
