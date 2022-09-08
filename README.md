@@ -47,7 +47,7 @@ As implied by the use of sudo, the destination folder requires administrator per
 
 ### Dependencies
 
-Mangetsu can be can also be built natively for Windows using the MINGW64 or UCRT64 environments of [the MSYS2 build platform](https://www.msys2.org/). If you aren't already set up, consider using UCRT64, which links against Microsoft's new, more consistent, and more standards conformant [Universal C Runtime](https://www.microsoft.com/en-us/download/details.aspx?id=48234). The UCRT ships with Windows 10 and above, but can be added to earlier versions using the downloads [here](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c). 
+Mangetsu can be can also be built natively for Windows using the MINGW64 or UCRT64 environments of [the MSYS2 build platform](https://www.msys2.org/). If you aren't already set up, consider using UCRT64, which links against Microsoft's new, more consistent, and more standards conformant Universal C Runtime. The UCRT ships with Windows 10 and above, but if you're on an earlier version, installation packages are available [here](https://www.microsoft.com/en-us/download/details.aspx?id=48234). 
 
 To get started setting up the actual build environment, download and run the MSYS2 installer from [their site](https://www.msys2.org/). After your initial setup, you will also need to install the following dependencies to build mangetsu:
 ```bash
