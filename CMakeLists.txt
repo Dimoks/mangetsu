@@ -21,7 +21,7 @@ option(BUILD_GUI "Build GUI programs [default: OFF]" OFF)
 #
 # Windows builds are statically linked to external libraries by default. 
 #
-if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+if(WIN32)
     option(LINK_STATIC_EXES "Link executables statically [default: ON]" ON)
 else()
     option(LINK_STATIC_EXES "Link executables statically [default: OFF]" OFF)
@@ -33,17 +33,11 @@ endif()
 #
 option(BUILD_SHARED_LIBS "Build shared libraries [default: OFF]" OFF)
 #
-# Set debug compile options and set default target to "Release". 
+# Set default target to "Release". 
+# src: https://www.kitware.com/cmake-and-the-default-build-type/
 #
 set(default_build_type "Release")
-if(CMAKE_BUILD_TYPE MATCHES "^([D|d][E|e][B|b][U|u][G|g])$")
-  add_compile_options(-gdwarf-4 -g3 -g -O0 -no-pie -fno-omit-frame-pointer)
-  if(NOT WIN32) # possibly too coarse a guard
-     add_compile_options("-Wl,--export-dynamic")     # ELF executables
-  else()
-     add_compile_options("-Wl,--export-all-symbols") # PE executables 
-  endif()
-elseif(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS 
     "Setting build type to '${default_build_type}' as none was specified.")
   set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
@@ -53,18 +47,26 @@ elseif(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 #
-# GCC compiler options for all build targets
+# GCC Compiler options for...
 #
+# ...all targets
 add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas
     -Werror -Wno-error=unused-variable -Wno-error=unused-but-set-variable 
     -Wno-error=pragmas -Wno-error=unused-local-typedefs)
-if(CMAKE_BUILD_TYPE MATCHES "^([R|r][E|e][L|l]|[E|e][A|a][S|s][E|e])$")
+# ...debug only
+if(CMAKE_BUILD_TYPE MATCHES "^([D|d][E|e][B|b][U|u][G|g])$")
+  add_compile_options(-gdwarf-4 -g3 -g -O0 -no-pie -fno-omit-frame-pointer)
+  if(NOT WIN32) # possibly too coarse a guard
+     add_compile_options("-Wl,--export-dynamic")     # ELF executables
+  else()
+     add_compile_options("-Wl,--export-all-symbols") # PE executables 
+  endif()
+endif()
+# ...release only (probably doesn't hurt for MinSizeRel and RelWithDebInfo too)
+if(CMAKE_BUILD_TYPE MATCHES "([R|r][E|e][L|l]|[E|e][A|a][S|s][E|e])")
   add_compile_options(-fpie)
 endif()
-#
-# GCC compiler options/defs specific to mingw64 x86_64
-# Guarded by initial if to prevent evaluation on Linux or Windows 
-#
+# ...mingw64 (guarded to prevent evaluation on Linux or non-mingw Windows) 
 if(MINGW)
     if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
       add_compile_definitions(_FILE_OFFSET_BITS=64)
@@ -83,7 +85,7 @@ else()
   add_link_options(-pie)
 endif()
 #
-# Add header dirs to include variable
+# Specify root include dirs
 #
 include_directories(include)     # default include dirs
 include_directories(vendor/json) # JSON library
@@ -166,7 +168,7 @@ if(BUILD_GUI)
      ${PC_LIBGLFW_LIBRARIES}
   )
   #
-  # Add data_explorer executable to project
+  # Add GUI programs
   #
   add_executable(data_explorer
       src/tools/data_explorer.cpp
@@ -177,7 +179,7 @@ if(BUILD_GUI)
   )
 endif(BUILD_GUI)
 #
-# Add CLI programs to project
+# Add CLI programs
 #
 add_executable(nxx_decompress
     src/tools/nxx_decompress.cpp
@@ -287,6 +289,3 @@ target_link_libraries(mrg_replace
 )
 
 include(cmake/Install.cmake) # installation configuration
-if(WIN32)
-  include(cmake/Package.cmake) # packaging configuration
-endif()
