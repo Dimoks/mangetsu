@@ -68,7 +68,7 @@ if(CMAKE_BUILD_TYPE MATCHES "([R|r][E|e][L|l]|[E|e][A|a][S|s][E|e])")
 endif()
 # ...mingw64 (guarded to prevent evaluation on Linux or non-mingw Windows)
 if(MINGW)
-    if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
+    if($ENV{MSYSTEM} MATCHES "MINGW64|UCRT64")
       add_compile_definitions(_FILE_OFFSET_BITS=64)
     endif()
 endif()
@@ -84,6 +84,14 @@ if(LINK_STATIC_EXES)
 else()
   add_link_options(-pie)
 endif()
+
+# Set large file support options for both platforms
+if(WIN32)
+    add_compile_definitions(_FILE_OFFSET_BITS=64)
+else()
+    add_compile_options(-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64)
+endif()
+
 #
 # Specify root include dirs
 #
@@ -129,10 +137,14 @@ if(MINGW)
         GIT_REPOSITORY https://github.com/bilditup1/mman-win32.git
         GIT_TAG 4f4e24d
         UPDATE_DISCONNECTED 1 # prevents rebuilds on every make/ninja run
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/mman-win32
       )
+      include_directories(${CMAKE_BINARY_DIR}/mman-win32/include)
+      link_directories(${CMAKE_BINARY_DIR}/mman-win32/lib)
       add_dependencies(mg_util mman-win32)
    else()
      include_directories(${MMAN_INCLUDE_DIRS})
+     link_directories(${MMAN_LIBRARY_DIRS})
    endif(NOT MMAN_FOUND)
    target_link_libraries(mg_util PRIVATE
          mman
@@ -296,5 +308,10 @@ target_link_libraries(hfa_extract
     mg_data
     stdc++fs
 )
+
+if (WIN32)
+  target_link_libraries(script_text_to_content_json ws2_32 crypt32)
+  target_link_libraries(repack_script_text_translation ws2_32 crypt32)
+endif()
 
 include(cmake/Install.cmake) # installation configuration

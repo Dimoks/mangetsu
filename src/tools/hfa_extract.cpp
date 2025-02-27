@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
   std::filesystem::path output_dir = output_path ? output_path : ".";
   if (!std::filesystem::exists(output_dir) &&
       !std::filesystem::create_directories(output_dir)) {
-    fprintf(stderr, "Failed to create output path '%s'\n", output_dir.c_str());
+    fprintf(stderr, "Failed to create output path '%s'\n", output_dir.string().c_str());
     return -1;
   }
 
@@ -63,18 +63,16 @@ int main(int argc, char **argv) {
     auto entry_data = hfa->entry_data(index);
     std::filesystem::path output_path = output_dir;
     output_path.append(hfa->entries().at(index).filename);
-    if (!mg::fs::write_file(output_path.c_str(), entry_data)) {
+    if (!mg::fs::write_file(output_path.string().c_str(), entry_data)) {
       return -1;
     }
-    fprintf(stderr, "Wrote %lu bytes to %s\n", entry_data.size(),
-            output_path.c_str());
+    fprintf(stderr, "Wrote %zu bytes to %s\n", entry_data.size(), output_path.string().c_str());
 
     return 0;
   };
 
   // Iterate the mrg entries and emit
-  for (std::vector<std::string>::size_type i = 0; i < hfa->entries().size();
-       i++) {
+  for (std::vector<std::string>::size_type i = 0; i < hfa->entries().size(); i++) {
     write_entry(i);
   }
 

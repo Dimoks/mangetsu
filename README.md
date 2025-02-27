@@ -27,7 +27,7 @@ newer GCCs are available [via the Ubuntu test toolchain PPA][3], and newer cmake
 ### Build commands
 
 ```bash
-git clone git@github.com:rschlaikjer/mangetsu.git
+git clone git@github.com:Dimoks/mangetsu.git
 cd mangetsu
 mkdir build && cd build
 cmake ..                # No UI programs
@@ -69,7 +69,7 @@ All told these packages and their dependencies will take up a bit over 1GiB of s
 
 CMake on the MSYS platform specifies the Ninja build system be installed and adds it during the installation process above. You can manually install GNU make later and use that instead, but it's much slower, especially when rebuilding. The build commands are more or less the same as on \*nix, with only the final line differing to account for the use of ninja:
 ```bash
-git clone git@github.com:rschlaikjer/mangetsu.git
+git clone git@github.com:Dimoks/mangetsu.git
 cd mangetsu
 mkdir build && cd build
 cmake ..                # No UI programs
