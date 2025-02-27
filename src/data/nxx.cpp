@@ -123,12 +123,16 @@ bool nxcx_decompress(const Nxx &header, const uint8_t *data, std::string &out) {
 
   // Perform inflation
   inflateInit(&istream);
-  const int err = inflate(&istream, Z_SYNC_FLUSH);
-  if (err != Z_OK) {
+  const int err = inflate(&istream, Z_FINISH);
+  if (err != Z_STREAM_END && err != Z_OK) {
     fprintf(stderr, "zlib error: %d: %s\n", err, istream.msg);
     return false;
   }
-  inflateEnd(&istream);
+  const int err2 = inflateEnd(&istream);
+  if (err2 != Z_OK) {
+    fprintf(stderr, "zlib error: %d: %s\n", err2, istream.msg);
+    return false;
+  }
 
   return true;
 }

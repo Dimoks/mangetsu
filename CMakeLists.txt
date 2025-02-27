@@ -7,7 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON) 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "core")
 
@@ -15,11 +15,11 @@ if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
   message(SEND_ERROR "In-source builds are not allowed.")
 endif ()
 #
-# Specify whether to build the GUI or not 
+# Specify whether to build the GUI or not
 #
 option(BUILD_GUI "Build GUI programs [default: OFF]" OFF)
 #
-# Windows builds are statically linked to external libraries by default. 
+# Windows builds are statically linked to external libraries by default.
 #
 if(WIN32)
     option(LINK_STATIC_EXES "Link executables statically [default: ON]" ON)
@@ -33,12 +33,12 @@ endif()
 #
 option(BUILD_SHARED_LIBS "Build shared libraries [default: OFF]" OFF)
 #
-# Set default target to "Release". 
+# Set default target to "Release".
 # src: https://www.kitware.com/cmake-and-the-default-build-type/
 #
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS 
+  message(STATUS
     "Setting build type to '${default_build_type}' as none was specified.")
   set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
       STRING "Choose the type of build." FORCE)
@@ -51,7 +51,7 @@ endif()
 #
 # ...all targets
 add_compile_options(-Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas
-    -Werror -Wno-error=unused-variable -Wno-error=unused-but-set-variable 
+    -Werror -Wno-error=unused-variable -Wno-error=unused-but-set-variable
     -Wno-error=pragmas -Wno-error=unused-local-typedefs)
 # ...debug only
 if(CMAKE_BUILD_TYPE MATCHES "^([D|d][E|e][B|b][U|u][G|g])$")
@@ -59,14 +59,14 @@ if(CMAKE_BUILD_TYPE MATCHES "^([D|d][E|e][B|b][U|u][G|g])$")
   if(NOT WIN32) # possibly too coarse a guard
      add_compile_options("-Wl,--export-dynamic")     # ELF executables
   else()
-     add_compile_options("-Wl,--export-all-symbols") # PE executables 
+     add_compile_options("-Wl,--export-all-symbols") # PE executables
   endif()
 endif()
 # ...release only (probably doesn't hurt for MinSizeRel and RelWithDebInfo too)
 if(CMAKE_BUILD_TYPE MATCHES "([R|r][E|e][L|l]|[E|e][A|a][S|s][E|e])")
   add_compile_options(-fpie)
 endif()
-# ...mingw64 (guarded to prevent evaluation on Linux or non-mingw Windows) 
+# ...mingw64 (guarded to prevent evaluation on Linux or non-mingw Windows)
 if(MINGW)
     if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
       add_compile_definitions(_FILE_OFFSET_BITS=64)
@@ -90,7 +90,7 @@ endif()
 include_directories(include)     # default include dirs
 include_directories(vendor/json) # JSON library
 #
-# Add libraries 
+# Add libraries
 #
 add_library(mg_util
   src/util/fs.cpp
@@ -105,19 +105,20 @@ add_library(mg_data
   src/data/mrg.cpp
   src/data/nam.cpp
   src/data/nxx.cpp
+  src/data/hfa.cpp
 )
 target_link_libraries(mg_data
     z
     mg_util
 )
-set_target_properties(mg_data    
+set_target_properties(mg_data
     PROPERTIES POSITION_INDEPENDENT_CODE ON
 )
 #
-# Neither Windows nor MSYS2 have a libmman wrapper, so 
-# one is downloaded, compiled, and installed here, and set as a 
+# Neither Windows nor MSYS2 have a libmman wrapper, so
+# one is downloaded, compiled, and installed here, and set as a
 # dependency and target link library for mg_util (fs.cpp). Should
-# work with MSVC but needs testing (along w/everything else). 
+# work with MSVC but needs testing (along w/everything else).
 #
 if(MINGW)
   find_package(PkgConfig)
@@ -138,7 +139,7 @@ if(MINGW)
    )
 endif(MINGW)
 #
-# Add GUI libs and exe(s); put behind a build flag so that people 
+# Add GUI libs and exe(s); put behind a build flag so that people
 # don't need to mess with dependencies as much by default
 #
 if(BUILD_GUI)
@@ -284,6 +285,14 @@ add_executable(mrg_replace
     src/tools/mrg_replace.cpp
 )
 target_link_libraries(mrg_replace
+    mg_data
+    stdc++fs
+)
+
+add_executable(hfa_extract
+    src/tools/hfa_extract.cpp
+)
+target_link_libraries(hfa_extract
     mg_data
     stdc++fs
 )
