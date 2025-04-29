@@ -50,6 +50,7 @@
 
 #include <stdio.h>      // sprintf, scanf
 #include <stdint.h>     // uint8_t, etc.
+#include <inttypes.h>   // SCNxPTR
 
 #if defined(_MSC_VER) || defined(_UCRT)
 #define _PRISizeT   "I"
@@ -481,7 +482,7 @@ struct MemoryEditor
         if (ImGui::InputText("##addr", AddrInputBuf, IM_ARRAYSIZE(AddrInputBuf), ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_EnterReturnsTrue))
         {
             size_t goto_addr;
-            if (sscanf(AddrInputBuf, "%" _PRISizeT "X", &goto_addr) == 1)
+            if (sscanf(AddrInputBuf, "%" SCNxPTR, &goto_addr) == 1)
             {
                 GotoAddr = goto_addr - base_display_addr;
                 HighlightMin = HighlightMax = (size_t)-1;
@@ -627,7 +628,7 @@ struct MemoryEditor
     // [Internal]
     void DrawPreviewData(size_t addr, const ImU8* mem_data, size_t mem_size, ImGuiDataType data_type, DataFormat data_format, char* out_buf, size_t out_buf_size) const
     {
-        uint8_t buf[8];
+        uint8_t buf[16];
         size_t elem_size = DataTypeGetSize(data_type);
         size_t size = addr + elem_size > mem_size ? mem_size - addr : elem_size;
         if (ReadFn)
