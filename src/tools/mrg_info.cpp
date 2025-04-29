@@ -4,6 +4,7 @@
 #include <mg/util/string.hpp>
 
 #include <filesystem>
+#include <stdio.h>
 
 void usage(const char *program_name) {
   fprintf(stderr, "%s [--csv] input_basename\n", program_name);

@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 
 #include <mg/data/mzp.hpp>
 #include <mg/util/endian.hpp>

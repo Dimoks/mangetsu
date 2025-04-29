@@ -1,12 +1,13 @@
 #include <filesystem>
 #include <set>
+#include <stdio.h>
 
 #include <mg/data/mrg.hpp>
 #include <mg/data/nam.hpp>
 #include <mg/util/fs.hpp>
 #include <mg/util/string.hpp>
 
-void usage(const char *program_name) {
+static void usage(const char *program_name) {
   fprintf(stderr, "%s [-i index...] input_basename [output_dir]\n",
           program_name);
 }
@@ -133,7 +134,7 @@ int main(int argc, char **argv) {
     if (!mg::fs::write_file(output_path.string().c_str(), entry_data)) {
       return -1;
     }
-    fprintf(stderr, "Wrote %zu bytes to %s\n", entry_data.size(),
+    printf("Wrote %zu bytes to %s\n", entry_data.size(),
             output_path.string().c_str());
 
     return 0;

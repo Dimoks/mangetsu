@@ -68,7 +68,7 @@ if(CMAKE_BUILD_TYPE MATCHES "([R|r][E|e][L|l]|[E|e][A|a][S|s][E|e])")
 endif()
 # ...mingw64 (guarded to prevent evaluation on Linux or non-mingw Windows)
 if(MINGW)
-    if($ENV{MSYSTEM} STREQUAL "MINGW64" OR $ENV{MSYSTEM} STREQUAL "UCRT64")
+    if($ENV{MSYSTEM} MATCHES "MINGW64|UCRT64")
       add_compile_definitions(_FILE_OFFSET_BITS=64)
     endif()
 endif()
@@ -84,11 +84,14 @@ if(LINK_STATIC_EXES)
 else()
   add_link_options(-pie)
 endif()
-#
-# Specify root include dirs
-#
-include_directories(include)     # default include dirs
-include_directories(vendor/json) # JSON library
+
+# Set large file support options for both platforms
+if(WIN32)
+    add_compile_definitions(_FILE_OFFSET_BITS=64)
+else()
+    add_compile_options(-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64)
+endif()
+
 #
 # Add libraries
 #
@@ -98,6 +101,9 @@ add_library(mg_util
 set_target_properties(mg_util
     PROPERTIES POSITION_INDEPENDENT_CODE ON
 )
+target_include_directories(mg_util PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
 
 add_library(mg_data
   src/data/mzp.cpp
@@ -106,6 +112,9 @@ add_library(mg_data
   src/data/nam.cpp
   src/data/nxx.cpp
   src/data/hfa.cpp
+)
+target_include_directories(mg_data PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
 )
 target_link_libraries(mg_data
     z
@@ -126,17 +135,20 @@ if(MINGW)
   if(NOT MMAN_FOUND)
       include(ExternalProject)
       ExternalProject_Add(mman-win32
-        GIT_REPOSITORY https://github.com/bilditup1/mman-win32.git
-        GIT_TAG 4f4e24d
+        GIT_REPOSITORY https://github.com/Dimoks/mman-win32.git
+        GIT_TAG 94b1620
         UPDATE_DISCONNECTED 1 # prevents rebuilds on every make/ninja run
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/mman-win32
       )
+      ExternalProject_Get_Property(mman-win32 BINARY_DIR)
+      set(MMAN_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/mman-win32/include)
+      set(MMAN_LIBRARY_DIRS ${CMAKE_BINARY_DIR}/mman-win32/lib)
+      set(MMAN_LIBRARIES mman)
       add_dependencies(mg_util mman-win32)
-   else()
-     include_directories(${MMAN_INCLUDE_DIRS})
-   endif(NOT MMAN_FOUND)
-   target_link_libraries(mg_util PRIVATE
-         mman
-   )
+  endif()
+  target_include_directories(mg_util PUBLIC ${MMAN_INCLUDE_DIRS})
+  target_link_directories(mg_util PUBLIC ${MMAN_LIBRARY_DIRS})
+  target_link_libraries(mg_util PRIVATE ${MMAN_LIBRARIES})
 endif(MINGW)
 #
 # Add GUI libs and exe(s); put behind a build flag so that people
@@ -145,13 +157,9 @@ endif(MINGW)
 if(BUILD_GUI)
   # OpenGL
   include(FindOpenGL)
-  include_directories(${OPENGL_INCLUDE_DIRS})
   # Glfw for windowing
   find_package(PkgConfig)
   pkg_check_modules(PC_LIBGLFW REQUIRED glfw3)
-  include_directories(${PC_LIBGLFW_INCLUDE_DIRS})
-  include_directories(vendor/gnu/)   # GNU Unifont (as cpp source file)
-  include_directories(vendor/imgui/) # Dear ImGUI library
   add_library(imgui
       STATIC
       vendor/imgui/imgui.cpp
@@ -164,15 +172,29 @@ if(BUILD_GUI)
   set_target_properties(imgui
       PROPERTIES POSITION_INDEPENDENT_CODE ON
   )
+  target_include_directories(imgui PUBLIC
+      ${CMAKE_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/vendor/gnu
+      ${CMAKE_SOURCE_DIR}/vendor/imgui
+      ${OPENGL_INCLUDE_DIRS}
+      ${PC_LIBGLFW_INCLUDE_DIRS}
+  )
   target_link_libraries(imgui
-     ${OPENGL_LIBRARIES}
-     ${PC_LIBGLFW_LIBRARIES}
+      ${OPENGL_LIBRARIES}
+      ${PC_LIBGLFW_LIBRARIES}
   )
   #
   # Add GUI programs
   #
   add_executable(data_explorer
       src/tools/data_explorer.cpp
+  )
+  target_include_directories(data_explorer PUBLIC
+      ${CMAKE_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/vendor/gnu
+      ${CMAKE_SOURCE_DIR}/vendor/imgui
+      ${OPENGL_INCLUDE_DIRS}
+      ${PC_LIBGLFW_INCLUDE_DIRS}
   )
   target_link_libraries(data_explorer
       mg_data
@@ -185,12 +207,18 @@ endif(BUILD_GUI)
 add_executable(nxx_decompress
     src/tools/nxx_decompress.cpp
 )
+target_include_directories(nxx_decompress PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
 target_link_libraries(nxx_decompress
     mg_data
 )
 
 add_executable(nxgx_compress
     src/tools/nxgx_compress.cpp
+)
+target_include_directories(nxgx_compress PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
 )
 target_link_libraries(nxgx_compress
     mg_data
@@ -199,12 +227,18 @@ target_link_libraries(nxgx_compress
 add_executable(mzx_decompress
     src/tools/mzx_decompress.cpp
 )
+target_include_directories(mzx_decompress PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
 target_link_libraries(mzx_decompress
     mg_data
 )
 
 add_executable(mzx_compress
     src/tools/mzx_compress.cpp
+)
+target_include_directories(mzx_compress PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
 )
 target_link_libraries(mzx_compress
     mg_data
@@ -213,12 +247,18 @@ target_link_libraries(mzx_compress
 add_executable(mzp_info
     src/tools/mzp_info.cpp
 )
+target_include_directories(mzp_info PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
 target_link_libraries(mzp_info
     mg_data
 )
 
 add_executable(mzp_extract
     src/tools/mzp_extract.cpp
+)
+target_include_directories(mzp_extract PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
 )
 target_link_libraries(mzp_extract
     mg_data
@@ -228,6 +268,9 @@ target_link_libraries(mzp_extract
 add_executable(mzp_compress
     src/tools/mzp_compress.cpp
 )
+target_include_directories(mzp_compress PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
 target_link_libraries(mzp_compress
     mg_data
 )
@@ -235,12 +278,19 @@ target_link_libraries(mzp_compress
 add_executable(nam_read
     src/tools/nam_read.cpp
 )
+target_include_directories(nam_read PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
 target_link_libraries(nam_read
     mg_data
 )
 
 add_executable(script_text_to_content_json
     src/tools/script_text_to_content_json.cpp
+)
+target_include_directories(script_text_to_content_json PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/vendor/json
 )
 target_link_libraries(script_text_to_content_json
     mg_data
@@ -251,6 +301,10 @@ target_link_libraries(script_text_to_content_json
 add_executable(repack_script_text_translation
     src/tools/repack_script_text_translation.cpp
 )
+target_include_directories(repack_script_text_translation PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/vendor/json
+)
 target_link_libraries(repack_script_text_translation
     mg_data
     ssl
@@ -260,6 +314,9 @@ target_link_libraries(repack_script_text_translation
 add_executable(mrg_extract
     src/tools/mrg_extract.cpp
 )
+target_include_directories(mrg_extract PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
 target_link_libraries(mrg_extract
     mg_data
     stdc++fs
@@ -267,6 +324,9 @@ target_link_libraries(mrg_extract
 
 add_executable(mrg_pack
     src/tools/mrg_pack.cpp
+)
+target_include_directories(mrg_pack PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
 )
 target_link_libraries(mrg_pack
     mg_data
@@ -276,6 +336,9 @@ target_link_libraries(mrg_pack
 add_executable(mrg_info
     src/tools/mrg_info.cpp
 )
+target_include_directories(mrg_info PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
 target_link_libraries(mrg_info
     mg_data
     stdc++fs
@@ -283,6 +346,9 @@ target_link_libraries(mrg_info
 
 add_executable(mrg_replace
     src/tools/mrg_replace.cpp
+)
+target_include_directories(mrg_replace PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
 )
 target_link_libraries(mrg_replace
     mg_data
@@ -292,9 +358,17 @@ target_link_libraries(mrg_replace
 add_executable(hfa_extract
     src/tools/hfa_extract.cpp
 )
+target_include_directories(hfa_extract PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
 target_link_libraries(hfa_extract
     mg_data
     stdc++fs
 )
+
+if (WIN32)
+  target_link_libraries(script_text_to_content_json ws2_32 crypt32)
+  target_link_libraries(repack_script_text_translation ws2_32 crypt32)
+endif()
 
 include(cmake/Install.cmake) # installation configuration

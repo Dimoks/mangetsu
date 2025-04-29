@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <stdio.h>
 
 #include <json.hpp>
 
@@ -11,7 +12,7 @@
 
 static const std::string TARGET_LANGUAGE = "en";
 
-std::vector<uint32_t>
+static std::vector<uint32_t>
 parse_offset_table(const std::string &string_offsets_raw) {
   // Extract the string offset table
   const uint32_t *string_offsets_u32 =
@@ -26,7 +27,7 @@ parse_offset_table(const std::string &string_offsets_raw) {
   return string_data_offsets;
 }
 
-std::vector<std::string>
+static std::vector<std::string>
 extract_string_table(const std::string &string_data_raw,
                      const std::vector<uint32_t> &string_offsets) {
   // Now that we have offsets, iterate the string data and extract from each
@@ -64,8 +65,8 @@ extract_string_table(const std::string &string_data_raw,
   return string_data;
 }
 
-mg::data::Mzp patch_string_table(const nlohmann::json &translation_db,
-                                 const mg::data::Mzp mzp_archive) {
+static mg::data::Mzp patch_string_table(const nlohmann::json &translation_db,
+                                        const mg::data::Mzp mzp_archive) {
   // The MZP archive consists of N pairs of string offset table + string data
   // table. For each pair, iterate the string table, extract the string, hash
   // it, check if the translated string exists, and if so inject the translated

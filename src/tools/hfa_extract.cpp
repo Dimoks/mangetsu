@@ -1,11 +1,10 @@
 #include <filesystem>
-#include <set>
+#include <stdio.h>
 
 #include <mg/data/hfa.hpp>
 #include <mg/util/fs.hpp>
-#include <mg/util/string.hpp>
 
-void usage(const char *program_name) {
+static void usage(const char *program_name) {
   fprintf(stderr, "%s input_file [output_dir]\n", program_name);
 }
 
@@ -54,7 +53,7 @@ int main(int argc, char **argv) {
   std::filesystem::path output_dir = output_path ? output_path : ".";
   if (!std::filesystem::exists(output_dir) &&
       !std::filesystem::create_directories(output_dir)) {
-    fprintf(stderr, "Failed to create output path '%s'\n", output_dir.c_str());
+    fprintf(stderr, "Failed to create output path '%s'\n", output_dir.string().c_str());
     return -1;
   }
 
@@ -63,11 +62,11 @@ int main(int argc, char **argv) {
     auto entry_data = hfa->entry_data(index);
     std::filesystem::path output_path = output_dir;
     output_path.append(hfa->entries().at(index).filename);
-    if (!mg::fs::write_file(output_path.c_str(), entry_data)) {
+    if (!mg::fs::write_file(output_path.string().c_str(), entry_data)) {
       return -1;
     }
-    fprintf(stderr, "Wrote %lu bytes to %s\n", entry_data.size(),
-            output_path.c_str());
+    printf("Wrote %zu bytes to %s\n", entry_data.size(),
+            output_path.string().c_str());
 
     return 0;
   };

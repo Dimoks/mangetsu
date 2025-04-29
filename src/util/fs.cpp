@@ -5,9 +5,10 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <stdio.h>
 
 // O_BINARY defined here for cross-compatibility (mode doesn't exist on *nix)
-#ifndef O_BINARY 
+#ifndef O_BINARY
 #define O_BINARY 0
 #endif
 

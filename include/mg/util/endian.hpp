@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 namespace mg {
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__

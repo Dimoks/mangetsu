@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 
 #include <mg.hpp>
 #include <mg/data/mzx.hpp>

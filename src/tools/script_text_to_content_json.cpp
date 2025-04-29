@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <stdio.h>
 
 #include <openssl/sha.h>
 
@@ -9,7 +10,7 @@
 #include <mg/util/fs.hpp>
 #include <mg/util/string.hpp>
 
-std::string sha256(const std::string &data) {
+static std::string sha256(const std::string &data) {
   uint8_t digest[SHA256_DIGEST_LENGTH];
   SHA256(reinterpret_cast<const uint8_t *>(data.data()), data.size(), digest);
   return std::string{reinterpret_cast<const char *>(digest),

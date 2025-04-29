@@ -1,5 +1,8 @@
 #pragma once
 
+#include <stdint.h>
+#include <string>
+
 #include <openssl/sha.h>
 
 namespace mg::util {

@@ -32,7 +32,7 @@ foreach (_target ${_TARGETS_LIST})
       ${_target_type} STREQUAL "SHARED_LIBRARY" OR
       ${_target_type} STREQUAL "STATIC_LIBRARY")
          add_custom_command(
-            TARGET ${_target} DEPENDS ${_target}
+            TARGET ${_target}
             POST_BUILD
             COMMAND $<$<CONFIG:release>:${CMAKE_STRIP}>
             ARGS --strip-unneeded $<TARGET_FILE:${_target}>

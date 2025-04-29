@@ -1,6 +1,7 @@
 #include <mg/data/mzp.hpp>
 #include <mg/util/fs.hpp>
-#include <mg/util/string.hpp>
+
+#include <stdio.h>
 
 int main(int argc, char **argv) {
   if (argc < 3) {

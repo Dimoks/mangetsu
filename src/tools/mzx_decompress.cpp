@@ -1,6 +1,8 @@
 #include <mg/data/mzx.hpp>
 #include <mg/util/fs.hpp>
 
+#include <stdio.h>
+
 int main(int argc, char **argv) {
   if (argc != 3) {
     fprintf(stderr, "%s infile outfile\n", argv[0]);

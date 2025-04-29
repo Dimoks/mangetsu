@@ -1,8 +1,8 @@
 #include <mg/data/nxx.hpp>
 #include <mg/util/fs.hpp>
-#include <mg/util/string.hpp>
 
 #include <filesystem>
+#include <stdio.h>
 
 int main(int argc, char **argv) {
   if (argc != 3) {

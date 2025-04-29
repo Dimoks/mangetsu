@@ -1,5 +1,6 @@
 #include <filesystem>
 #include <map>
+#include <stdio.h>
 
 #include <mg.hpp>
 #include <mg/data/mrg.hpp>
@@ -8,7 +9,7 @@
 #include <mg/util/fs.hpp>
 #include <mg/util/string.hpp>
 
-void usage(const char *program_name) {
+static void usage(const char *program_name) {
   fprintf(
       stderr,
       "%s -iINDEX1 file1 [-iINDEX2 file2...] input_basename output_basename\n",
