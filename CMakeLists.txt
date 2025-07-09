@@ -285,6 +285,16 @@ target_link_libraries(mzp_compress
     mg_data
 )
 
+add_executable(mzp_localize
+    src/tools/mzp_localize.cpp
+)
+target_include_directories(mzp_localize PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+target_link_libraries(mzp_localize
+    mg_data
+)
+
 add_executable(nam_read
     src/tools/nam_read.cpp
 )
