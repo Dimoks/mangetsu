@@ -27,15 +27,16 @@ void Mzp::MzpArchiveEntry::to_file_order() {
 
 void Mzp::MzpArchiveEntry::print() {
   fprintf(stderr,
-          "MzpArchiveEntry:\n"
           "    Sector offset:   %08x\n"
           "    Byte offset:     %08x\n"
           "    Size sectors:    %08x\n"
           "    Size lowbytes:   %08x\n"
           "    True offset:     %08x\n"
-          "    True size:       %08x\n",
+          "    True size:       %08x\n"
+          "    Decimal size:    %8u\n",
           sector_offset, byte_offset, size_sectors, size_bytes,
-          (sector_offset * SECTOR_SIZE) + byte_offset, entry_data_size());
+          (sector_offset * SECTOR_SIZE) + byte_offset, entry_data_size(),
+          entry_data_size());
 }
 
 void Mzp::MzpArchiveEntry::set_offsets(uint32_t offset) {
@@ -45,10 +46,10 @@ void Mzp::MzpArchiveEntry::set_offsets(uint32_t offset) {
 
 void Mzp::MzpArchiveEntry::set_data_size(uint32_t size) {
   // Calculate the number of sectors our data crosses (rounding up)
-  const bool crosses_sector = !!(size % SECTOR_SIZE);
-  const unsigned sector_bound =
-      crosses_sector ? (size / SECTOR_SIZE) + 1 : (size / SECTOR_SIZE);
-  size_sectors = sector_bound;
+  const uint32_t current_offset = sector_offset * SECTOR_SIZE + byte_offset;
+  const unsigned sector_bound = (current_offset + size + SECTOR_SIZE - 1) /
+                                  SECTOR_SIZE;
+  size_sectors = sector_bound - sector_offset;
   size_bytes = size & 0xFFFF;
 }
 
@@ -72,17 +73,15 @@ void mzp_write(const Mzp &mzp, std::string &out) {
   // Clone the header data so that we can recalculate it
   std::vector<Mzp::MzpArchiveEntry> entry_headers = mzp.entry_headers;
   std::string::size_type current_data_offset = 0;
+  const int alignment = 8;
   for (unsigned i = 0; i < mzp.entry_headers.size(); i++) {
     Mzp::MzpArchiveEntry &entry_header = entry_headers[i];
     auto &entry_data = mzp.entry_data[i];
     const std::string::size_type entry_size = entry_data.size();
+    int padding_size = alignment - (entry_size % alignment);
     entry_header.set_offsets(current_data_offset);
     entry_header.set_data_size(entry_size);
-    current_data_offset += entry_size;
-    // Pad current data offset to 16 byte boundary
-    // const std::string::size_type real_data_end_addr =
-    //     data_segment_start + current_data_offset;
-    // current_data_offset += 16 - (real_data_end_addr % 16);
+    current_data_offset += entry_size + padding_size;
   }
 
   // Calculate total file size
