@@ -128,10 +128,8 @@ MZX is a basic LZ-adjacent compression format. It is purely a compression
 format, with no archive capabilities.
 
 - `mzx_decompress`: Decompress a MZX-compressed file
-- `mzx_compress`: Compress a raw file using MZX compression. NOTE: This program
-currently does not attempt to actually do _useful_ compression - it will
-generate a valid MZP output, but the output _will_ be larger than the input
-file.
+- `mzx_compress`: Compress a raw file using MZX compression. This program currently does three levels of compression.
+These are no compression, fast compression and enhanced compression.
 
 ### NXX
 

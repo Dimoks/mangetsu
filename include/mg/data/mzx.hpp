@@ -9,7 +9,7 @@ namespace mg::data {
 struct __attribute__((__packed__)) MzxHeader {
   static constexpr const char *FILE_MAGIC = "MZX0";
 
-  // Maic word
+  // Magic word
   uint8_t magic[4];
   // LE
   uint32_t decompressed_size;
@@ -25,7 +25,8 @@ struct __attribute__((__packed__)) MzxHeader {
 };
 
 bool mzx_decompress(const std::string &compressed, std::string &out,
-                    bool invert = true);
-bool mzx_compress(const std::string &raw, std::string &out, bool invert = true);
+                    bool invert = false);
+bool mzx_compress(const std::string &raw, std::string &out, int level = 0,
+                    bool invert = false);
 
 } // namespace mg::data
