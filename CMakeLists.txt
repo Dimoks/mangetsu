@@ -112,6 +112,7 @@ add_library(mg_data
   src/data/nam.cpp
   src/data/nxx.cpp
   src/data/hfa.cpp
+  src/data/offsets_table.cpp
 )
 target_include_directories(mg_data PUBLIC
     ${CMAKE_SOURCE_DIR}/include
@@ -282,6 +283,16 @@ target_include_directories(mzp_compress PUBLIC
     ${CMAKE_SOURCE_DIR}/include
 )
 target_link_libraries(mzp_compress
+    mg_data
+)
+
+add_executable(mzp_localize
+    src/tools/mzp_localize.cpp
+)
+target_include_directories(mzp_localize PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+target_link_libraries(mzp_localize
     mg_data
 )
 
