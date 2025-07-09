@@ -122,6 +122,8 @@ MRG, these files are self-describing and do not have a separate HED file.
 - `mzp_compress`: Combine multiple files into an mzp archive
 - `mzp_extract`: Extract all sections from an mzp archive
 
+- `mzp_localize`: Creates an MZP localization archive (script_text.mrg) from text files containing localization strings. The line endings in these text files must be in Windows format (CRLF).
+
 ### MZX
 
 MZX is a basic LZ-adjacent compression format. It is purely a compression
