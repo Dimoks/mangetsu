@@ -153,7 +153,8 @@ bool nxgx_compress(const std::string_view &in, std::string &out) {
   dstream.total_out = 0;
 
   // Init deflate context
-  if (int err = deflateInit2(&dstream, -1, 8, 15 + 16, 8, 0) != Z_OK) {
+  if (int err = deflateInit2(&dstream, Z_BEST_COMPRESSION,
+                             8, 15 + 16, 8, 0) != Z_OK) {
     fprintf(stderr, "zlib init error: %d: %s\n", err, dstream.msg);
     return false;
   }
@@ -188,7 +189,55 @@ bool nxgx_compress(const std::string_view &in, std::string &out) {
 }
 
 bool nxcx_compress(const std::string_view &in, std::string &out) {
-  return false;
+  // Create stream context
+  z_stream dstream{};
+  dstream.avail_in = in.size();
+  dstream.next_in =
+      const_cast<uint8_t *>(reinterpret_cast<const uint8_t *>(in.data()));
+
+  // Default output to same size as input + size of header
+  out.resize(in.size() + sizeof(Nxx));
+
+  // Set the output start to be past the end of the reserved header area
+  dstream.avail_out = out.size();
+  dstream.next_out = reinterpret_cast<uint8_t *>(out.data() + sizeof(Nxx));
+  dstream.total_out = 0;
+
+  // Init deflate context for raw zlib
+  if (int err = deflateInit(&dstream, Z_DEFAULT_COMPRESSION) != Z_OK) {
+    fprintf(stderr, "zlib init error: %d: %s\n", err, dstream.msg);
+    return false;
+  }
+
+  // Perform deflate
+  int err = deflate(&dstream, Z_FINISH);
+  if (err != Z_OK && err != Z_STREAM_END) {
+    fprintf(stderr, "zlib deflate error: %d: %s\n", err, dstream.msg);
+    deflateEnd(&dstream);
+    return false;
+  }
+
+  // Get the final compressed size
+  const int compressed_size = dstream.total_out;
+
+  // Clean up
+  err = deflateEnd(&dstream);
+  if (err != Z_OK) {
+    fprintf(stderr, "zlib deflateEnd error: %d: %s\n", err, dstream.msg);
+    return false;
+  }
+
+  // Write the header
+  Nxx *header = reinterpret_cast<Nxx *>(out.data());
+  header->size = in.size();
+  header->compressed_size = compressed_size;
+  memcpy(header->magic, MAGIC_NXCX, sizeof(header->magic));
+  header->to_file_order();
+
+  // Shrink output buffer to fit
+  out.resize(sizeof(Nxx) + compressed_size);
+
+  return true;
 }
 
 } // namespace mg::data

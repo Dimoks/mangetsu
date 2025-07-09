@@ -22,8 +22,8 @@ int main(int argc, char **argv) {
 
   // Compress
   std::string compressed;
-  if (!mg::data::nxgx_compress(raw, compressed)) {
-    fprintf(stderr, "Failed to compress\n");
+  if (!mg::data::nxcx_compress(raw, compressed)) {
+    fprintf(stderr, "Failed to compress.\n");
     return -1;
   }
 
