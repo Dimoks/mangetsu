@@ -91,7 +91,25 @@ if(WIN32)
 else()
     add_compile_options(-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64)
 endif()
-
+#
+find_path(IMAGEQUANT_INCLUDE_DIRS libimagequant.h)
+find_library(IMAGEQUANT_LIBRARIES NAMES imagequant)
+if (IMAGEQUANT_INCLUDE_DIRS AND IMAGEQUANT_LIBRARIES)
+    include_directories(${IMAGEQUANT_INCLUDE_DIR})
+    set(IMAGEQUANT_FOUND TRUE)
+else()
+    message(FATAL_ERROR "libimagequant not found.")
+endif()
+#
+if(LINK_STATIC_EXES)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" ".lib")
+endif()
+find_package(PNG REQUIRED)
+#
+message(STATUS "PNG_INCLUDE_DIRS: ${PNG_INCLUDE_DIRS}")
+message(STATUS "PNG_LIBRARIES: ${PNG_LIBRARIES}")
+message(STATUS "IMAGEQUANT_INCLUDE_DIRS: ${IMAGEQUANT_INCLUDE_DIRS}")
+message(STATUS "IMAGEQUANT_LIBRARIES: ${IMAGEQUANT_LIBRARIES}")
 #
 # Add libraries
 #
@@ -112,11 +130,12 @@ add_library(mg_data
   src/data/nam.cpp
   src/data/nxx.cpp
   src/data/hfa.cpp
+  src/data/mzpimage.cpp
 )
 target_include_directories(mg_data PUBLIC
     ${CMAKE_SOURCE_DIR}/include
 )
-target_link_libraries(mg_data
+target_link_libraries(mg_data PUBLIC
     z
     mg_util
 )
@@ -293,6 +312,34 @@ target_include_directories(mzp_localize PUBLIC
 )
 target_link_libraries(mzp_localize
     mg_data
+)
+
+add_executable(mzpimg_extract
+    src/tools/mzpimg_extract.cpp
+)
+target_include_directories(mzpimg_extract PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+    ${PNG_INCLUDE_DIRS}
+    ${IMAGEQUANT_INCLUDE_DIRS}
+)
+target_link_libraries(mzpimg_extract
+    mg_data
+    ${PNG_LIBRARIES}
+    ${IMAGEQUANT_LIBRARIES}
+)
+
+add_executable(mzpimg_compress
+    src/tools/mzpimg_compress.cpp
+)
+target_include_directories(mzpimg_compress PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+    ${PNG_INCLUDE_DIRS}
+    ${IMAGEQUANT_INCLUDE_DIRS}
+)
+target_link_libraries(mzpimg_compress
+    mg_data
+    ${PNG_LIBRARIES}
+    ${IMAGEQUANT_LIBRARIES}
 )
 
 add_executable(nam_read

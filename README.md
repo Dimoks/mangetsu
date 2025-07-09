@@ -10,7 +10,7 @@ Nintendo Switch version of the Tsukihime Remake.
 To build all tools, you will need at least the following
 
 ```bash
-sudo apt install -y build-essential cmake zlib1g-dev libssl-dev
+sudo apt install -y build-essential cmake zlib1g-dev libssl-dev libpng-dev libimagequant-dev
 ```
 If you also wish to build the graphical tools, you will need some additional dependencies
 ```bash
@@ -52,9 +52,9 @@ Mangetsu can be can also be built natively for Windows using the MINGW64 or UCRT
 To get started setting up the actual build environment, download and run the MSYS2 installer from [their site](https://www.msys2.org/). After your initial setup, you will also need to install the following dependencies to build mangetsu:
 ```bash
 # ucrt64
-pacman -S git mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gcc-libs mingw-w64-ucrt-x86_64-headers-git mingw-w64-ucrt-x86_64-winpthreads-git mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-pkgconf mingw-w64-ucrt-x86_64-openssl mingw-w64-ucrt-x86_64-zlib
+pacman -S git mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gcc-libs mingw-w64-ucrt-x86_64-headers-git mingw-w64-ucrt-x86_64-winpthreads-git mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-pkgconf mingw-w64-ucrt-x86_64-openssl mingw-w64-ucrt-x86_64-zlib mingw-w64-ucrt-x86_64-libpng mingw-w64-ucrt-x86_64-libimagequant
 # mingw64
-pacman -S git mingw-w64-x86_64-gcc mingw-w64-x86_64-gcc-libs  mingw-w64-x86_64-headers-git mingw-w64-x86_64-winpthreads-git mingw-w64-x86_64-cmake mingw-w64-x86_64-pkgconf mingw-w64-x86_64-openssl  mingw-w64-x86_64-zlib
+pacman -S git mingw-w64-x86_64-gcc mingw-w64-x86_64-gcc-libs  mingw-w64-x86_64-headers-git mingw-w64-x86_64-winpthreads-git mingw-w64-x86_64-cmake mingw-w64-x86_64-pkgconf mingw-w64-x86_64-openssl mingw-w64-x86_64-zlib mingw-w64-x86_64-libpng mingw-w64-x86_64-libimagequant
 ```
 If you wish to build the graphical tools, you'll also need:
 ```bash
@@ -63,7 +63,7 @@ pacman -S mingw-w64-ucrt-x86_64-glfw
 # mingw64
 pacman -S mingw-w64-x86_64-glfw
 ```
-All told these packages and their dependencies will take up a bit over 1GiB of space on a clean install. Please note that during the build process, one additional dependency, [a small support library](https://github.com/bilditup1/mman-win32) that translates memory mapping API syntax, is downloaded, built, and installed within the confines of your MSYS2 environment; you are encouraged to investigate CMakeLists.txt as well as the library itself for more details. 
+All told these packages and their dependencies will take up a bit about 2GiB of space on a clean install. Please note that during the build process, one additional dependency, [a small support library](https://github.com/Dimoks/mman-win32) that translates memory mapping API syntax, is downloaded, built, and installed within the confines of your MSYS2 environment; you are encouraged to investigate CMakeLists.txt as well as the library itself for more details. 
 
 ### Build commands
 
@@ -76,6 +76,7 @@ cmake ..                # No UI programs
 cmake -DBUILD_GUI=On .. # With UI programs
 ninja
 ```
+After building, copy `libimagequant.dll` from `ucrt64\bin` or `mingw64\bin` to the `build` directory, as it is linked dynamically.
 
 ### Installation (all users)
 
@@ -123,6 +124,9 @@ MRG, these files are self-describing and do not have a separate HED file.
 - `mzp_extract`: Extract all sections from an mzp archive
 
 - `mzp_localize`: Creates an MZP localization archive (script_text.mrg) from text files containing localization strings. The line endings in these text files must be in Windows format (CRLF).
+
+- `mzpimg_extract`: Converts an MZP Image archive into a PNG image.
+- `mzpimg_compress`: Converts a PNG image into an MZP Image archive based on an existing MZP Image archive. The resolution of the input PNG image must match the resolution of the PNG image obtained from converting the existing MZP Image archive.
 
 ### MZX
 
