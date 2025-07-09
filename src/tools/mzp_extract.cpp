@@ -22,18 +22,28 @@ int main(int argc, char **argv) {
     return -1;
   }
   // If we are putting output in a specific folder, check that it exists
-   if (argc == 3 && !std::filesystem::exists(argv[2])) {
-    fprintf(stderr, "Output directory '%s' does not exist, exiting\n", argv[2]);
-    return -1;
-  }
-   // Helper to get output file path for entries
-  auto output_path = [&](unsigned entry) -> std::string {
-    std::string file_name = mg::string::format("%s_%04u.bin", argv[1], entry);
-    if (argc == 3) {
-      return (std::filesystem::path(argv[2])).string().append(file_name);
-    } else {
-      return (std::filesystem::path(file_name)).string();
+  if (argc == 3 && !std::filesystem::is_directory(argv[2])) {
+    std::error_code ec;
+    std::filesystem::create_directories(argv[2], ec);
+    if (ec) {
+      fprintf(stderr, "Failed to create output directory: %s\n", argv[2]);
+      return -1;
     }
+  }
+  // Helper to get output file path for entries
+  auto output_path = [&](unsigned entry) -> std::string {
+    std::filesystem::path input_file_path(argv[1]);
+    std::string input_file_name = input_file_path.filename().string();
+    std::string file_name = mg::string::format("%s_%04u.bin",
+                            input_file_name.c_str(), entry);
+    std::filesystem::path path;
+    if (argc == 3) {
+      path = argv[2];
+    } else {
+      path = input_file_path.parent_path();
+    }
+    path.append(file_name);
+    return path.string();
   };
 
   // Split MZP into constituent files
@@ -44,7 +54,7 @@ int main(int argc, char **argv) {
       fprintf(stderr, "Writing files failed!\n");
       return -1;
     }
-    fprintf(stderr, "Wrote %s\n", path.c_str());
+    printf("Wrote %s\n", path.c_str());
   }
 
   return 0;

@@ -1,6 +1,5 @@
 #include <mg/data/mzp.hpp>
 #include <mg/util/fs.hpp>
-#include <mg/util/string.hpp>
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -22,8 +21,9 @@ int main(int argc, char **argv) {
   }
 
   fprintf(stderr, "MZP archive of %zu elements:\n", mzp.entry_headers.size());
-  for (auto &header : mzp.entry_headers) {
-    header.print();
+  for (size_t i = 0; i < mzp.entry_headers.size(); ++i) {
+    fprintf(stderr, "MzpArchiveEntry %zu:\n", i);
+    mzp.entry_headers[i].print();
   }
 
   for (unsigned i = 0; i < mzp.entry_headers.size(); i++) {

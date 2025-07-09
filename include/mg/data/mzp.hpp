@@ -45,12 +45,17 @@ struct Mzp {
     void print();
 
     uint32_t entry_data_size() const {
-      // The `size` field is the raw 16 low 16 bits of the full size of the
-      // entry in bytes. To get our total size, calculate the total number of
-      // 2^16 bit pages that are part of this entry, then add on the least
-      // significant bits
+      // The `size_bytes` field is the low 16 bits of the full size of the
+      // entry in bytes. To get the total size, calculate the total bytes from
+      // the sector count (each sector is 0x800 bytes), subtract the offset
+      // within the sector and `size_bytes`. If the result fits within 16 bits
+      // (<= 0xFFFF), use `size_bytes` directly. Otherwise, compute the number
+      // of 2^16-byte pages and combine with `size_bytes`.
       const uint32_t upper_bound_size_bytes = size_sectors * SECTOR_SIZE;
-      const uint32_t size = (upper_bound_size_bytes & ~(0xFFFF)) | size_bytes;
+      const uint32_t adjusted_size = upper_bound_size_bytes - byte_offset -
+                                      size_bytes;
+      const uint32_t size = (adjusted_size <= 0xFFFF) ? size_bytes :
+                            ((adjusted_size / 0x10000) << 16) | size_bytes;
       return size;
     }
 
