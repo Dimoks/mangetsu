@@ -4,7 +4,7 @@
 
 namespace mg::string {
 
-const std::string bytes_to_hex(const std::string &bytes) {
+inline const std::string bytes_to_hex(const std::string &bytes) {
   std::string ret;
   ret.resize(bytes.size() * 2);
   auto nibble_to_hex = [](uint8_t nibble) -> char {
@@ -24,7 +24,7 @@ const std::string bytes_to_hex(const std::string &bytes) {
 }
 
 template <typename... Args>
-std::string format(const std::string &format, Args... args) {
+inline std::string format(const std::string &format, Args... args) {
   size_t size = snprintf(nullptr, 0, format.c_str(), args...) + 1;
   std::string ret;
   ret.resize(size);
