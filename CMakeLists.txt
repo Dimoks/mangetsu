@@ -224,6 +224,16 @@ target_link_libraries(nxgx_compress
     mg_data
 )
 
+add_executable(nxcx_compress
+    src/tools/nxcx_compress.cpp
+)
+target_include_directories(nxcx_compress PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+target_link_libraries(nxcx_compress
+    mg_data
+)
+
 add_executable(mzx_decompress
     src/tools/mzx_decompress.cpp
 )

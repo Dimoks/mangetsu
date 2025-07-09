@@ -134,11 +134,11 @@ These are no compression, fast compression and enhanced compression.
 ### NXX
 
 NXGX / NXCX files are GZIP / LZ compressed data formats with a small header.
-Note that NXCX support is not tested due to lack of sample files.
 
 - `nxx_decompress`: Given a file in either NXGZ or NXCX format, uncompress the
   data to a new file.
 - `nxgx_compress`: Given a raw file, compress in NXGZ format.
+- `nxcx_compress`: Given a raw file, compress in NXZ (NXCX) format.
 
 ### GUI Programs
 
