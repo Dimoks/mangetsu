@@ -23,8 +23,21 @@ int main(int argc, char **argv) {
   // Compress
   std::string compressed;
   if (!mg::data::nxgx_compress(raw, compressed)) {
-    fprintf(stderr, "Failed to compress\n");
+    fprintf(stderr, "Failed to compress.\n");
     return -1;
+  }
+
+  std::filesystem::path output_dir =
+       std::filesystem::path(output_file).parent_path();
+
+  if (!output_dir.empty()) {
+    std::error_code ec;
+    std::filesystem::create_directories(output_dir, ec);
+    if (ec) {
+      fprintf(stderr, "Failed to create output directory: %s: %s\n",
+                      output_dir.string().c_str(), ec.message().c_str());
+      return -1;
+    }
   }
 
   // Write

@@ -27,6 +27,19 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+  std::filesystem::path output_dir =
+       std::filesystem::path(output_file).parent_path();
+
+  if (!output_dir.empty()) {
+    std::error_code ec;
+    std::filesystem::create_directories(output_dir, ec);
+    if (ec) {
+      fprintf(stderr, "Failed to create output directory: %s: %s\n",
+                      output_dir.string().c_str(), ec.message().c_str());
+      return -1;
+    }
+  }
+
   // Write
   if (!mg::fs::write_file(output_file, decompressed)) {
     return -1;
