@@ -468,6 +468,21 @@ target_link_libraries(ccit_convert
     mg_data
 )
 
+add_executable(mangetsu_tools
+    src/tools/mangetsu_tools.cpp
+)
+target_include_directories(mangetsu_tools PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+    ${PNG_INCLUDE_DIRS}
+    ${IMAGEQUANT_INCLUDE_DIRS}
+)
+target_link_libraries(mangetsu_tools
+    mg_data
+    stdc++fs
+    ${PNG_LIBRARIES}
+    ${IMAGEQUANT_LIBRARIES}
+)
+
 if (WIN32)
   target_link_libraries(script_text_to_content_json ws2_32 crypt32)
   target_link_libraries(repack_script_text_translation ws2_32 crypt32)
