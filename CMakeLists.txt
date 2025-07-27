@@ -136,6 +136,7 @@ add_library(mg_data
   src/data/bitstream.cpp
   src/data/cbg.cpp
   src/data/lenzu.cpp
+  src/data/ccit.cpp
 )
 target_include_directories(mg_data PUBLIC
     ${CMAKE_SOURCE_DIR}/include
@@ -457,6 +458,16 @@ target_include_directories(lenzu_decompress PUBLIC
     ${CMAKE_SOURCE_DIR}/include
 )
 target_link_libraries(lenzu_decompress
+    mg_data
+)
+
+add_executable(ccit_convert
+    src/tools/ccit_convert.cpp
+)
+target_include_directories(ccit_convert PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+target_link_libraries(ccit_convert
     mg_data
 )
 
