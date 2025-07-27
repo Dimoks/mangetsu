@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
     if (!mg::fs::write_file(output_path.string().c_str(), entry_data)) {
       return -1;
     }
-    fprintf(stderr, "Wrote %zu bytes to %s\n", entry_data.size(),
+    printf("Wrote %zu bytes to %s\n", entry_data.size(),
             output_path.string().c_str());
 
     return 0;

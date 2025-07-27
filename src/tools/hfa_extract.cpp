@@ -1,9 +1,7 @@
 #include <filesystem>
-#include <set>
 
 #include <mg/data/hfa.hpp>
 #include <mg/util/fs.hpp>
-#include <mg/util/string.hpp>
 
 void usage(const char *program_name) {
   fprintf(stderr, "%s input_file [output_dir]\n", program_name);
@@ -52,10 +50,14 @@ int main(int argc, char **argv) {
 
   // Ensure output dir exists
   std::filesystem::path output_dir = output_path ? output_path : ".";
-  if (!std::filesystem::exists(output_dir) &&
-      !std::filesystem::create_directories(output_dir)) {
-    fprintf(stderr, "Failed to create output path '%s'\n", output_dir.string().c_str());
-    return -1;
+  if (!output_dir.empty()) {
+    std::error_code ec;
+    std::filesystem::create_directories(output_dir, ec);
+    if (ec) {
+      fprintf(stderr, "Failed to create output directory: %s: %s\n",
+                      output_dir.string().c_str(), ec.message().c_str());
+      return -1;
+    }
   }
 
   // Utility method to write an index to an output file
