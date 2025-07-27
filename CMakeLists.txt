@@ -135,6 +135,7 @@ add_library(mg_data
   src/data/mzpimage.cpp
   src/data/bitstream.cpp
   src/data/cbg.cpp
+  src/data/lenzu.cpp
 )
 target_include_directories(mg_data PUBLIC
     ${CMAKE_SOURCE_DIR}/include
@@ -447,6 +448,16 @@ target_include_directories(cbg_convert PUBLIC
 target_link_libraries(cbg_convert
     mg_data
     ${PNG_LIBRARIES}
+)
+
+add_executable(lenzu_decompress
+    src/tools/lenzu_decompress.cpp
+)
+target_include_directories(lenzu_decompress PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+)
+target_link_libraries(lenzu_decompress
+    mg_data
 )
 
 if (WIN32)
