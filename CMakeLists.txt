@@ -131,6 +131,7 @@ add_library(mg_data
   src/data/nxx.cpp
   src/data/hfa.cpp
   src/data/mzpimage.cpp
+  src/data/cbg.cpp
 )
 target_include_directories(mg_data PUBLIC
     ${CMAKE_SOURCE_DIR}/include
@@ -431,6 +432,18 @@ target_include_directories(hfa_extract PUBLIC
 target_link_libraries(hfa_extract
     mg_data
     stdc++fs
+)
+
+add_executable(cbg_convert
+    src/tools/cbg_convert.cpp
+)
+target_include_directories(cbg_convert PUBLIC
+    ${CMAKE_SOURCE_DIR}/include
+    ${PNG_INCLUDE_DIRS}
+)
+target_link_libraries(cbg_convert
+    mg_data
+    ${PNG_LIBRARIES}
 )
 
 if (WIN32)

@@ -1,7 +1,7 @@
 # Mangetsu 満月
 
 A collection of tools for reading/writing the data formats packaged in the
-Nintendo Switch version of the Tsukihime Remake.
+Nintendo Switch version of the Tsukihime Remake and other similar games.
 
 ## Building on Debian / Ubuntu / APT-based Linux
 
@@ -153,3 +153,9 @@ allows reinterpreting a file as any of the formats above on the fly, as well as
 recursively extracting and displaying sub-archives of those files. It also
 features a hex view and other tools designed to make analysis of raw formats
 easier.
+
+### CBG
+
+CompressedBG image files. They use for compression differential coding and a Huffman table.
+
+- `cbg_convert`: Converts between CompressedBG (.cbg) images and PNG images. The resolution of the input PNG image must match the resolution of the PNG image obtained from converting the existing .cbg image.
