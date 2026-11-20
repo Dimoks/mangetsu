@@ -165,3 +165,9 @@ CompressedBG image files. They use for compression differential coding and a Huf
 Lenzu is a data compression algorithm that uses Huffman coding and backward references.
 
 - `lenzu_decompress`: Decompress a Lenzu-compressed file
+
+### ccit
+
+Files .ccit — a binary file that stores a glyph table with coordinates in raster fonts.
+
+- `ccit_convert`: Converts ccit files to a text file with double tab delimiters and back. Before converting to text, decompress the file using the Lenzu decompressor.
