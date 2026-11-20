@@ -159,3 +159,9 @@ easier.
 CompressedBG image files. They use for compression differential coding and a Huffman table.
 
 - `cbg_convert`: Converts between CompressedBG (.cbg) images and PNG images. The resolution of the input PNG image must match the resolution of the PNG image obtained from converting the existing .cbg image.
+
+### Lenzu
+
+Lenzu is a data compression algorithm that uses Huffman coding and backward references.
+
+- `lenzu_decompress`: Decompress a Lenzu-compressed file
