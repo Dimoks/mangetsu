@@ -36,4 +36,12 @@ inline std::string format(const std::string &format, Args... args) {
   return ret;
 }
 
+inline std::string toLower(const std::string &str) {
+  std::string lowerStr = str;
+  for (char &c : lowerStr) {
+    if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
+  }
+  return lowerStr;
+}
+
 } // namespace mg::string
