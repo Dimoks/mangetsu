@@ -171,3 +171,7 @@ Lenzu is a data compression algorithm that uses Huffman coding and backward refe
 Files .ccit — a binary file that stores a glyph table with coordinates in raster fonts.
 
 - `ccit_convert`: Converts ccit files to a text file with double tab delimiters and back. Before converting to text, decompress the file using the Lenzu decompressor.
+
+### Mangetsu tools
+
+- `mangetsu_tools`: A tool that combines functionality for all the aforementioned formats, with added support for HFA archives.
